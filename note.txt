@@ -1,1 +1,0 @@
-This file exists only for performing an adhoc test and should be deleted after today.
