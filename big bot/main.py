@@ -2,11 +2,13 @@ from ctypes import CDLL
 kipr = "/usr/local/lib/libkipr.so"
 k = CDLL(kipr)
 
-CLAW_PORT = 0
-ARM_PORT = 1
+CLAW_PORT = 1
+ARM_PORT = 0
 
-ARM_STRAIGHT = 360
+ARM_STRAIGHT_UP = 1100
+ARM_STRAIGHT = 160
 
+CLAW_OPEN  = 986
 CLAW_CLOSED = 1968
 
 BLACK = 2600
@@ -53,20 +55,30 @@ def drive_to_line(left_speed, right_speed, left_sensor, right_sensor):
 		k.create_drive_direct(left_speed, 0)
 	while (right_sensor() > BLACK):
 		k.create_drive_direct(0, right_speed)
+        
+def reset():
+	k.enable_servos()
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
+	move_servo(CLAW_PORT, CLAW_OPEN)
+	k.disable_servos()
 def main():
 	success = retry_connect(5)
 	if not success:
 		print("Failed to connect!!!")
 		return -1
-	drive_to_line(-100, -100, k.get_create_lcliff_amt, k.get_create_rcliff_amt)
-	k.create_drive_direct(100, 100)
-	k.msleep(500)
+	drive_to_line(-50, -50, k.get_create_lcliff_amt, k.get_create_rcliff_amt)
+	k.create_drive_direct(50, 50)
+	k.msleep(1600)
 	k.create_stop()
-	move_servo_slowly(ARM_PORT, ARM_STRAIGHT, 50)
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT, 10)
+	k.msleep(500)
 	move_servo(CLAW_PORT, CLAW_CLOSED)
-	k.create_drive_direct(-50, -50)
-	k.msleep(1000)
+	k.enable_servos()
+	k.msleep(500)
+	k.create_drive_direct(-250, -250)
+	k.msleep(3000)
+	drive_to_line(-250, -250, k.get_create_lcliff_amt, k.get_create_rcliff_amt)
 	k.create_disconnect()
 	k.disable_servos()
-
+#reset()
 main()
