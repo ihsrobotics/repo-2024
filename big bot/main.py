@@ -84,6 +84,15 @@ def drive_to_line(left_speed, right_speed, left_sensor, right_sensor):
 		drive(left_speed, 0)
 	while (right_sensor() > BLACK):
 		drive(0, right_speed)
+#square up ON WHITE!!!!
+def drive_to_line_white(left_speed, right_speed, left_sensor, right_sensor):
+	print(left_sensor(), right_sensor())
+	while (left_sensor() < BLACK and right_sensor() < BLACK):
+		drive(left_speed, right_speed)
+	while (left_sensor() < BLACK):
+		drive(left_speed, 0)
+	while(right_sensor() < BLACK):
+		drive(0, right_speed)
 
 def reset():
 	k.enable_servos()
@@ -133,20 +142,22 @@ def main():
 	k.enable_servos()
 	k.msleep(500)
 
-	drive_to_line(250, 250, left_front, right_front)
+	#drive_to_line(250, 250, left_front, right_front)
 	#ihs_bindings.encoder_drive_straight_cm(-100, 10)
-	drive(250, 250) ##drive past line and out of box
-	k.msleep(500)
+	#drive(250, 250) ##drive past line and out of box
+	#k.msleep(500)
 
 	#turn out of box
 	ihs_bindings.encoder_turn_degrees_v2(100, -20)
 	drive(100, 100)
-	k.msleep(800)
+	k.msleep(500)
 
 	#turn to middle line
-	ihs_bindings.encoder_turn_degrees_v2(100, -20)
-	drive_to_line(150, 250, left_side, right_side)
-	drive(100, 100)
+	ihs_bindings.encoder_turn_degrees_v2(100, -5)
+	while (left_side() > BLACK and right_side() > BLACK):
+		drive(150, 150)
+	drive_to_line_white(150, 150, left_side, right_side)
+	#drive(100, 100)
 	k.msleep(300)
 
 	#turn 90 to be able to line follow straight
