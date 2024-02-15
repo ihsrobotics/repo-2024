@@ -39,9 +39,9 @@ def drive(left_speed, right_speed):
 	return
 
 #sensor test
-#while True:
-#	print (left_side(), "left side")
-#	print (" ")
+##while True:
+##	print (left_side(), "left side")
+##	print (" ")
 #	print (left_front(), "left front")
 #	print (" ")
 #	print (right_side(), "right side")
@@ -57,7 +57,9 @@ def retry_connect(n):
 			print("Connected ^w^")
 			return True
 	return False
-
+def cleanup():
+	k.create_disconnect()
+	k.disable_servos()
 # higher step value = faster servo move
 # the servo is disabled after calling the function
 # to protect microservoes
@@ -86,22 +88,31 @@ def move_servo(port, end_position):
 
 #square up
 def drive_to_line(left_speed, right_speed, left_sensor=left_front, right_sensor=right_front):
-	print(left_sensor(), right_sensor())
+	detect = 0
+	print (left_sensor(), right_sensor())
 	while (left_sensor() > BLACK and right_sensor() > BLACK):
 		drive(left_speed, right_speed)
-	while (left_sensor() > BLACK):
-		drive(left_speed, 0)
-	while (right_sensor() > BLACK):
-		drive(0, right_speed)
+	if detect < 2:
+		while (left_sensor() > BLACK):
+			drive(left_speed, 0)
+		detect += 1
+		print (detect)
+		while (right_sensor() > BLACK):
+			drive(0, right_speed)
+		detect += 1
+		drive(0,0)
+		return
+
 #square up ON WHITE!!!!
 def drive_to_line_white(left_speed, right_speed, left_sensor, right_sensor):
-	print(left_sensor(), right_sensor())
+	print (left_sensor(), right_sensor())
 	while (left_sensor() < BLACK and right_sensor() < BLACK):
 		drive(left_speed, right_speed)
 	while (left_sensor() < BLACK):
 		drive(left_speed, 0)
 	while(right_sensor() < BLACK):
 		drive(0, right_speed)
+	return
 
 def line_follow(port, seconds):
 	end_time = seconds*1000
@@ -121,6 +132,7 @@ def test_drag():
 	k.create_drive_direct(100, 100)
 	k.msleep(10000)
 	k.create_disconnect()
+
 def main():
 	success = retry_connect(5) ## connects to but, tries 5 times
 	if not success:
@@ -129,19 +141,19 @@ def main():
 
 	#drive_to_line(-50, -50, k.get_create_lcliff_amt, k.get_create_rcliff_amt)
 	start_time = k.seconds()
-	
-	#line up arm with free-standing structure
+
+	#line up arm with free-standing structure left most rods
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	ihs_bindings.encoder_turn_degrees_v2(100, -40)
 	drive_to_line(100, 100, left_side, right_side)
-	drive_to_line_white(100, 100, right_side, left_side)
-	#drive(-50, -50)
-	k.msleep(1000)
+	ihs_bindings.encoder_turn_degrees_v2(100, -3)
+	#drive_to_line_white(100, 100, right_side, left_side) #might be causing it to turn out of alinement
+	k.msleep(100)
+	drive(-50, -50)
+	k.msleep(500)
 	#drives to starting line not square up b/c square up makes the bot turn
 	"""
-	while (left_side() > BLACK and right_side() > BLACK):
-		drive(50, 50)
 	#drive to make sure both sensors are on the starting line
 	drive(50, 50)
 	k.msleep(200)
@@ -163,27 +175,31 @@ def main():
 	k.enable_servos()
 	k.msleep(500)
 	drive(150, 150)
-	k.msleep(1000)
+	k.msleep(2000)
 
 	#drive_to_line(250, 250, left_front, right_front)
 	#ihs_bindings.encoder_drive_straight_cm(-100, 10)
 	#drive(250, 250) ##drive past line and out of box
 	#k.msleep(500)
 
-	'''#turn out of box
+	"""
+	#turn out of box
 	ihs_bindings.encoder_turn_degrees_v2(100, -20)
 	drive(100, 100)
-	k.msleep(500)'''
+	k.msleep(500)
+	"""
 
 	#drive to second line
 	drive_to_line(150, 150, left_side, right_side)
-	ihs_bindings.encoder_turn_degrees_v2(50, 180)
+	drive(-150, -150)
+	k.msleep(200)
+	ihs_bindings.encoder_turn_degrees_v2(50, 90)
 
-	#turn to middle line
-	ihs_bindings.encoder_turn_degrees_v2(100, -5)
-	while (left_side() > BLACK and right_side() > BLACK):
-		drive(150, 150)
-	drive_to_line_white(150, 150, left_side, right_side)
+	#go to middle line
+	#ihs_bindings.encoder_turn_degrees_v2(100, -5)
+	while (left_side() < BLACK and right_side() < BLACK):
+		drive(-150, -150)
+	#drive_to_line_white(150, 150, left_side, right_side)
 	#drive(100, 100)
 	k.msleep(300)
 
@@ -196,4 +212,4 @@ def main():
 	k.create_disconnect()
 	k.disable_servos()
 main()
-
+cleanup()
