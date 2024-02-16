@@ -18,11 +18,13 @@ CLAW_CLOSED = 1968
 """
 ARM_STRAIGHT_UP = 1300
 ARM_STRAIGHT = 200
+ARM_GRAB = 100
 ARM_DOWN = 40
 
 CLAW_OPEN  = 986
 CLAW_CLOSED = 1968
 
+SENSOR_BLACK = 1000 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
 BLACK = 2600 ## > BLACK is white, < BLACK is black
 
 #sensor shortcuts
@@ -37,7 +39,18 @@ def right_front():
 def drive(left_speed, right_speed):
 	k.create_drive_direct(left_speed, right_speed)
 	return
-
+def farthest_left_distance():
+	return k.get_create_llight_bump_amt()
+def middle_left_distance():
+	return k. get_create_lflightbump_amt()
+def foward_left_distance():
+	return k.get_create_lclightbump_amt()
+def farthest_right_distance():
+        return k.get_create_rlight_bump_amt()
+def middle_right_distance():
+        return k. get_create_rflightbump_amt()
+def foward_right_distance():
+        return k.get_create_rclightbump_amt()
 #sensor test
 ##while True:
 ##	print (left_side(), "left side")
@@ -118,10 +131,10 @@ def line_follow(port, seconds):
 	end_time = seconds*1000
 	start = k.seconds()
 	while (k.seconds() - start < end_time):
-		if (k.analog(port) < BLACK):
-			k.create_drive_direct(-250, -150)
-		if(k.analog(port) > BLACK):
-			k.create_drive_direct(-150, -250)
+		if (port() < BLACK):
+			k.create_drive_direct(250, 150)
+		if(port() > BLACK):
+			k.create_drive_direct(150, 250)
 def test_drag():
 	success = retry_connect(5)
 	if not success:
@@ -138,8 +151,6 @@ def main():
 	if not success:
 		print("Failed to connect!!!")
 		return -1
-
-	#drive_to_line(-50, -50, k.get_create_lcliff_amt, k.get_create_rcliff_amt)
 	start_time = k.seconds()
 
 	#line up arm with free-standing structure left most rods
@@ -147,24 +158,11 @@ def main():
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	ihs_bindings.encoder_turn_degrees_v2(100, -40)
 	drive_to_line(100, 100, left_side, right_side)
-	ihs_bindings.encoder_turn_degrees_v2(100, -3)
-	#drive_to_line_white(100, 100, right_side, left_side) #might be causing it to turn out of alinement
+	ihs_bindings.encoder_turn_degrees_v2(100, -2) #orginally -3
 	k.msleep(100)
 	drive(-50, -50)
 	k.msleep(500)
-	#drives to starting line not square up b/c square up makes the bot turn
-	"""
-	#drive to make sure both sensors are on the starting line
-	drive(50, 50)
-	k.msleep(200)
-	#drive to the end of the starting line
-	while (left_side() < BLACK and right_side() < BLACK):
-		drive(50, 50)
-	#drive a little past the starting line
-	drive(50, 50)
-	k.msleep(1000)
-	#k.msleep(500) #orginally 1600
-	"""
+
 	k.create_stop()
 
 	#grab free standing structure
@@ -173,14 +171,10 @@ def main():
 
 	move_servo(CLAW_PORT, CLAW_CLOSED) ## closes claw
 	k.enable_servos()
+	move_servo_slowly(ARM_PORT, ARM_GRAB)
 	k.msleep(500)
 	drive(150, 150)
 	k.msleep(2000)
-
-	#drive_to_line(250, 250, left_front, right_front)
-	#ihs_bindings.encoder_drive_straight_cm(-100, 10)
-	#drive(250, 250) ##drive past line and out of box
-	#k.msleep(500)
 
 	"""
 	#turn out of box
@@ -189,24 +183,30 @@ def main():
 	k.msleep(500)
 	"""
 
-	#drive to second line
-	drive_to_line(150, 150, left_side, right_side)
-	drive(-150, -150)
-	k.msleep(200)
+	#drive foward to middle of white space
+	drive(150, 150)
+	k.msleep(1200)
 	ihs_bindings.encoder_turn_degrees_v2(50, 90)
 
 	#go to middle line
 	#ihs_bindings.encoder_turn_degrees_v2(100, -5)
-	while (left_side() < BLACK and right_side() < BLACK):
-		drive(-150, -150)
-	#drive_to_line_white(150, 150, left_side, right_side)
+	"""while (k.analog(BACK_TOPHAT) < 1000):
+		drive(-150, -150)"""
+	drive_to_line(-150, -150, left_side, right_side)
 	#drive(100, 100)
-	k.msleep(300)
+	#drive(-150, -150)
+	#k.msleep(300)
 
 	#turn 90 to be able to line follow straight
-	ihs_bindings.encoder_turn_degrees_v2(100, -90)
+	ihs_bindings.encoder_turn_degrees_v2(100, 97)
+	middle_right_distance()
 
-	line_follow(BACK_TOPHAT, 1.5) ##line follow 2 seconds
+	#release structure
+	move_servo(CLAW_PORT, CLAW_OPEN)
+	k.enable_servos()
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
+
+	line_follow(left_front, 0.5) ##line follow 2 seconds
 	#drive_to_line(-250, -200, k.get_create_lcliff_amt, k.get_create_rcliff_amt)
 	print(k.seconds() - start_time)
 	k.create_disconnect()
