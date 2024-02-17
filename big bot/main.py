@@ -145,36 +145,40 @@ def test_drag():
 	k.create_drive_direct(100, 100)
 	k.msleep(10000)
 	k.create_disconnect()
-
+def print_battery_info():
+	print("Capacity", k.get_create_battery_capacity())
+	print("Charge", k.get_create_battery_charge())
+	print("Percentage", k.get_create_battery_charge() / k.get_create_battery_capacity() * 100)
 def main():
 	success = retry_connect(5) ## connects to but, tries 5 times
 	if not success:
 		print("Failed to connect!!!")
 		return -1
+	print_battery_info()
 	start_time = k.seconds()
 
 	#line up arm with free-standing structure left most rods
-	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10) #orig step: 5
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	ihs_bindings.encoder_turn_degrees_v2(100, -40)
-	drive_to_line(100, 100, left_side, right_side)
-	ihs_bindings.encoder_turn_degrees_v2(100, -2) #orginally -3
+	drive_to_line(200, 200, left_side, right_side) #orig speed: 100, 100
+	ihs_bindings.encoder_turn_degrees_v2(200, -2) #orig speed: 100, -2, deg originally -3 but DO NOT CHANGE since -2 is good
 	k.msleep(100)
-	drive(-50, -50)
-	k.msleep(500)
+	drive(-100, -100) #orig speed: -50, -50
+	k.msleep(350) #orig time: 500
 
 	k.create_stop()
 
 	#grab free standing structure
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT, 3) ## lowers hand to grab Structure
-	k.msleep(1000)
+	k.msleep(100) #orig time: 1000
 
 	move_servo(CLAW_PORT, CLAW_CLOSED) ## closes claw
 	k.enable_servos()
 	move_servo_slowly(ARM_PORT, ARM_GRAB)
-	k.msleep(500)
-	drive(150, 150)
-	k.msleep(2000)
+	k.msleep(100) #orig time: 500
+	drive(300, 300) #orig speed: 150, 150
+	k.msleep(1000) #orig time: 2000
 
 	"""
 	#turn out of box
@@ -184,30 +188,43 @@ def main():
 	"""
 
 	#drive foward to middle of white space
-	drive(150, 150)
-	k.msleep(1200)
-	ihs_bindings.encoder_turn_degrees_v2(50, 90)
+	drive(300, 300) #orig speed: 150, 150
+	k.msleep(600) #orig time: 1200
+	ihs_bindings.encoder_turn_degrees_v2(100, 90) #orig speed: 50, 90 deg clockwise
 
 	#go to middle line
 	#ihs_bindings.encoder_turn_degrees_v2(100, -5)
 	"""while (k.analog(BACK_TOPHAT) < 1000):
 		drive(-150, -150)"""
-	drive_to_line(-150, -150, left_side, right_side)
+	drive_to_line(-150, -150, left_side, right_side) #orig speed: -150, -150
 	#drive(100, 100)
 	#drive(-150, -150)
 	#k.msleep(300)
 
-	#turn 90 to be able to line follow straight
-	ihs_bindings.encoder_turn_degrees_v2(100, 97)
-	middle_right_distance()
+	#move forward an arbitrary amount to center the roomba on the line (I LOVR HARDCODE>>>>)
+	drive(150, 150) #orig speed: 150, 150
+	k.msleep(400) #orig time: 400
+	drive(0, 0)
+
+	#turn 90 to place structure structure 
+	ihs_bindings.encoder_turn_degrees_v2(100, 97) #orig speed: 100, 97 deg clockwise
 
 	#release structure
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	k.enable_servos()
-	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
-
-	line_follow(left_front, 0.5) ##line follow 2 seconds
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10) #orig step: 5
 	#drive_to_line(-250, -200, k.get_create_lcliff_amt, k.get_create_rcliff_amt)
+
+	#center on black line
+	#while (left_side() and right_side() and left_front() and right_front()) > BLACK and BACK_TOPHAT < BLACK:
+	#	drive(100, -100)
+	ihs_bindings.encoder_turn_degrees_v2(100, 165) #orig speed: 100, 165 deg clockwise
+	drive(-150, -150) #orig speed: -150, -150
+	k.msleep(271) #orig time: 271
+
+	#INSERT NOODLE GRABBING CODE HERE
+
+	#print the time elapsed since the start of the program
 	print(k.seconds() - start_time)
 	k.create_disconnect()
 	k.disable_servos()
