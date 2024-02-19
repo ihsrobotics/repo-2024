@@ -4,9 +4,9 @@ k = CDLL(kipr)
 
 import ihs_bindings
 
-CLAW_PORT = 0
+CLAW_PORT = 3
 ARM_PORT = 1
-BACK_TOPHAT = 2
+ARM_TOPHAT_PORT = 0
 """
 4176 bot
 ARM_STRAIGHT_UP = 1300
@@ -20,11 +20,12 @@ ARM_STRAIGHT_UP = 1300
 ARM_STRAIGHT = 200
 ARM_GRAB = 100
 ARM_DOWN = 40
+ARM_ON_RACK = 500
 
 CLAW_OPEN  = 986
 CLAW_CLOSED = 1968
 
-SENSOR_BLACK = 1000 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
+SENSOR_BLACK = 3000 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
 BLACK = 2600 ## > BLACK is white, < BLACK is black
 
 #sensor shortcuts
@@ -149,6 +150,45 @@ def print_battery_info():
 	print("Capacity", k.get_create_battery_capacity())
 	print("Charge", k.get_create_battery_charge())
 	print("Percentage", k.get_create_battery_charge() / k.get_create_battery_capacity() * 100)
+
+def noodle_grab():
+	retry_connect(5)
+	k.enable_servos()
+	#drive forward towards the rack
+	drive(150, 150)
+	k.msleep(321) #orig 271 for the center right of the rack when facing it
+	"""
+	#all this is for placing the noodle on the center right of the rack
+	ihs_bindings.encoder_turn_degrees_v2(100, -160)
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT, 3)
+	"""
+	#rotate so claw (that's holding a noodle) is facing a rack prong
+	ihs_bindings.encoder_turn_degrees_v2(100, -147.5)
+	#lift arm down so that noodle is halfway penetrated by prong
+	move_servo_slowly(ARM_PORT, ARM_ON_RACK, 2)
+	#let go of noodle
+	k.msleep(500)
+	k.enable_servos()
+	k.set_servo_position(CLAW_PORT, CLAW_OPEN)
+	k.enable_servos()
+	k.msleep(3000)
+	#note: may not need this turn after the claw redesign
+	#turn slghtly so that noodle is not stuck on black prong on claw
+	ihs_bindings.encoder_turn_degrees_v2(100, -3)
+	k.msleep(250)
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 3)
+	#ihs_bindings.encoder_turn_degrees(100, 147)
+	drive(100, -100)
+	k.msleep(250)
+	move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
+	k.msleep(500)
+	while (k.analog(ARM_TOPHAT_PORT) < SENSOR_BLACK):
+		drive(50, -50)
+		print(k.analog(ARM_TOPHAT_PORT))
+	drive(-100, -100)
+	k.msleep(321)
+	k.disable_servos()
+
 def main():
 	success = retry_connect(5) ## connects to but, tries 5 times
 	if not success:
@@ -222,11 +262,14 @@ def main():
 	drive(-150, -150) #orig speed: -150, -150
 	k.msleep(271) #orig time: 271
 
-	#INSERT NOODLE GRABBING CODE HERE
+	#INSERT NOODLE GRABBING CODE HERE:
+	#noodle garb
 
 	#print the time elapsed since the start of the program
 	print(k.seconds() - start_time)
 	k.create_disconnect()
 	k.disable_servos()
-main()
+
+#main
+noodle_grab()
 cleanup()
