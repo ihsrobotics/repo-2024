@@ -4,7 +4,7 @@ k = CDLL(kipr)
 
 import ihs_bindings
 
-CLAW_PORT = 3
+CLAW_PORT = 2
 ARM_PORT = 1
 ARM_TOPHAT_PORT = 0
 """
@@ -13,19 +13,24 @@ ARM_STRAIGHT_UP = 1300
 ARM_STRAIGHT = 200
 ARM_DOWN = 40
 
-CLAW_OPEN = 986
-CLAW_CLOSED = 1968
+CLAW_OPEN = 900
+CLAW_CLOSED = 1650
 """
 ARM_STRAIGHT_UP = 1300
 ARM_STRAIGHT = 200
-ARM_GRAB = 100
-ARM_DOWN = 40
+ARM_GRAB = 125
+ARM_DOWN = 70
 ARM_ON_RACK = 500
+ARM_ON_NOODLE_PIPE = 950 
+ARM_TOP_NOODLE = 650
+ARM_UPPER_NOODLE = 550
+ARM_MIDDLE_NOODLE = 400 #placeholder
+ARM_LOWER_NOODLE = 0
+ARM_BOTTOM_NOODLE = 0 #placeholder 
+CLAW_OPEN  = 900
+CLAW_CLOSED = 1650
 
-CLAW_OPEN  = 986
-CLAW_CLOSED = 1968
-
-SENSOR_BLACK = 3000 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
+SENSOR_BLACK = 4000 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
 BLACK = 2600 ## > BLACK is white, < BLACK is black
 
 #sensor shortcuts
@@ -151,7 +156,7 @@ def print_battery_info():
 	print("Charge", k.get_create_battery_charge())
 	print("Percentage", k.get_create_battery_charge() / k.get_create_battery_capacity() * 100)
 
-def noodle_grab():
+def place_noodle_on_rack():
 	retry_connect(5)
 	k.enable_servos()
 	#drive forward towards the rack
@@ -180,15 +185,37 @@ def noodle_grab():
 	#ihs_bindings.encoder_turn_degrees(100, 147)
 	drive(100, -100)
 	k.msleep(250)
-	move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
-	k.msleep(500)
-	while (k.analog(ARM_TOPHAT_PORT) < SENSOR_BLACK):
-		drive(50, -50)
-		print(k.analog(ARM_TOPHAT_PORT))
+	turn_to_line_left()
 	drive(-100, -100)
 	k.msleep(321)
 	k.disable_servos()
-
+def get_top_noodle():
+	move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+	drive(-20, -20)
+	move_servo_slowly(ARM_PORT, ARM_ON_NOODLE_PIPE, 3)
+	k.create_stop()
+def get_upper_noodle():
+	move_servo_slowly(ARM_PORT, ARM_UPPER_NOODLE, 5)
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+	drive(-10, -10)
+	move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
+	get_top_noodle()	
+def get_middle_noodle():
+	pass
+def get_lower_noodle():
+	pass
+def get_bottom_noodle():
+	pass
+def turn_to_line_right():
+	#move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
+	k.msleep(500)
+	while (k.analog(ARM_TOPHAT_PORT) < SENSOR_BLACK):
+		drive(60, -60)
+	k.create_stop()
+	k.msleep(500) #give a second for roomba to actually stop
+	while (k.analog(ARM_TOPHAT_PORT) > SENSOR_BLACK):
+		drive(-60, 60)
 def main():
 	success = retry_connect(5) ## connects to but, tries 5 times
 	if not success:
@@ -205,7 +232,7 @@ def main():
 	ihs_bindings.encoder_turn_degrees_v2(200, -2) #orig speed: 100, -2, deg originally -3 but DO NOT CHANGE since -2 is good
 	k.msleep(100)
 	drive(-100, -100) #orig speed: -50, -50
-	k.msleep(350) #orig time: 500
+	k.msleep(300) #orig time: 500
 
 	k.create_stop()
 
@@ -247,7 +274,7 @@ def main():
 	drive(0, 0)
 
 	#turn 90 to place structure structure 
-	ihs_bindings.encoder_turn_degrees_v2(100, 97) #orig speed: 100, 97 deg clockwise
+	ihs_bindings.encoder_turn_degrees_v2(100, 90) #orig speed: 100, 97 deg clockwise
 
 	#release structure
 	move_servo(CLAW_PORT, CLAW_OPEN)
@@ -258,7 +285,10 @@ def main():
 	#center on black line
 	#while (left_side() and right_side() and left_front() and right_front()) > BLACK and BACK_TOPHAT < BLACK:
 	#	drive(100, -100)
-	ihs_bindings.encoder_turn_degrees_v2(100, 165) #orig speed: 100, 165 deg clockwise
+	drive(50, -50)
+	move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
+	#ihs_bindings.encoder_turn_degrees_v2(100, 100) #orig speed: 100, 165 deg clockwise
+	turn_to_line_right()
 	drive(-150, -150) #orig speed: -150, -150
 	k.msleep(271) #orig time: 271
 
@@ -266,10 +296,18 @@ def main():
 	#noodle garb
 
 	#print the time elapsed since the start of the program
-	print(k.seconds() - start_time)
+	print("time", k.seconds() - start_time)
 	k.create_disconnect()
 	k.disable_servos()
-
-#main
-noodle_grab()
+retry_connect(5)
+print_battery_info()
+get_top_noodle()
+ihs_bindings.encoder_turn_degrees_v2(100, 180)
+move_servo(CLAW_PORT, CLAW_OPEN)
+k.msleep(500)
+move_servo(CLAW_PORT, CLAW_CLOSED)
+ihs_bindings.encoder_turn_degrees_v2(100, 180)
+get_upper_noodle()
+#main()
+#noodle_grab()
 cleanup()
