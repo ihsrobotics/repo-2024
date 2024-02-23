@@ -2,11 +2,14 @@ from ctypes import CDLL
 kipr = "/usr/local/lib/libkipr.so"
 k = CDLL(kipr)
 
-#import ihs_bindings
+import ihs_bindings
 
-CLAW_PORT = 3
-ARM_PORT = 1
+CLAW_PORT = 0
+ARM_PORT = 2
 ARM_TOPHAT_PORT = 0
+SIDE_SERVO_PORT = 3
+SIDE_TOPHAT_PORT = 5
+
 """
 4176 bot
 ARM_STRAIGHT_UP = 1300
@@ -24,6 +27,9 @@ ARM_ON_RACK = 500
 
 CLAW_OPEN  = 986
 CLAW_CLOSED = 1968
+
+SIDE_LEFT = 0
+SIDE_RIGHT = 2047
 
 SENSOR_BLACK = 3000 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
 BLACK = 2600 ## > BLACK is white, < BLACK is black
@@ -275,13 +281,13 @@ def main():
     """
 
 def reset():
-    move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
+    move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
     move_servo_slowly(CLAW_PORT, CLAW_CLOSED, 5)
 
 def first_pipe():
     # put on hold while the boom arm is being developed
     drive_to_line(-150, -150, left_side, right_side)
-    move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
+    #move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
     drive(-150, -150)
     k.msleep(1600)
     #this portion would be encoder_turn_degrees_v2 if ihsboost worked!!!
@@ -300,7 +306,7 @@ def first_pipe():
 def third_pipe():
     # square up with line running through center and raise arm
     drive_to_line(150, 150, left_side, right_side)
-    move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
+    #move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
     # move off of center line
     drive(150, 150)
     k.msleep(1500)
@@ -311,13 +317,13 @@ def third_pipe():
         if(left_front() > BLACK):
             k.create_drive_direct(250, 150)
     # once at the top right vertical tape, drive slightly forward to somewhat center the bot
-    drive(150, 150)
-    k.msleep(500)
+    drive(300, 300)
+    k.msleep(250)
     # rotate the bot to have the arm lower down outside of the black tape
     drive(150, -150)
     k.msleep(700)
     drive(0, 0)
-    move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
+    move_servo_slowly(ARM_PORT, 0, 10)
     # wait to ensure that the arm is all the way down
     k.msleep(500)
     # rotate the bot until the tophat port at the end of the arm is aligned with the trv tape
@@ -329,10 +335,12 @@ def third_pipe():
     move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
     while (left_front() > BLACK):
         drive(-150, -150)
+    ihs_bindings.encoder_turn_degrees_v2(100, 2)
     drive(150, 150)
-    k.msleep(140)
+    k.msleep(300)
     drive(0, 0)
-    move_servo_slowly(ARM_PORT, ARM_STRAIGHT + 50, 5)
+    move_servo_slowly(ARM_PORT, 875, 5)
+    move_servo(CLAW_PORT, CLAW_OPEN)
     
 
 
@@ -344,6 +352,6 @@ def third_pipe():
 
 #main
 retry_connect(5)
-reset()
-#third_pipe()
+#reset()
+third_pipe()
 cleanup()
