@@ -4,8 +4,8 @@ k = CDLL(kipr)
 
 import ihs_bindings
 
-CLAW_PORT = 2
-ARM_PORT = 1
+CLAW_PORT = 0
+ARM_PORT = 3
 ARM_TOPHAT_PORT = 0
 """
 4176 bot
@@ -21,13 +21,13 @@ ARM_STRAIGHT = 200
 ARM_GRAB = 125
 ARM_DOWN = 70
 ARM_ON_RACK = 500
-ARM_ON_NOODLE_PIPE = 950 
-ARM_TOP_NOODLE = 650
-ARM_UPPER_NOODLE = 550
+ARM_ON_NOODLE_PIPE = 1050 #orig: 950 
+ARM_TOP_NOODLE = 700
+ARM_UPPER_NOODLE = 540
 ARM_MIDDLE_NOODLE = 400 #placeholder
 ARM_LOWER_NOODLE = 0
 ARM_BOTTOM_NOODLE = 0 #placeholder 
-CLAW_OPEN  = 900
+CLAW_OPEN  = 110
 CLAW_CLOSED = 1650
 
 SENSOR_BLACK = 4000 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
@@ -111,17 +111,16 @@ def drive_to_line(left_speed, right_speed, left_sensor=left_front, right_sensor=
 	print (left_sensor(), right_sensor())
 	while (left_sensor() > BLACK and right_sensor() > BLACK):
 		drive(left_speed, right_speed)
-	if detect < 2:
-		while (left_sensor() > BLACK):
-			drive(left_speed, 0)
-		detect += 1
-		print (detect)
-		while (right_sensor() > BLACK):
-			drive(0, right_speed)
-		detect += 1
-		drive(0,0)
-		return
-
+	while (left_sensor() > BLACK):
+		drive(left_speed, 0)
+	detect += 1
+	print (detect)
+	while (right_sensor() > BLACK):
+		drive(0, right_speed)
+	detect += 1
+	drive(0,0)
+	return
+#gyro_turn_degrees_v2(100,180)
 #square up ON WHITE!!!!
 def drive_to_line_white(left_speed, right_speed, left_sensor, right_sensor):
 	print (left_sensor(), right_sensor())
@@ -190,17 +189,17 @@ def place_noodle_on_rack():
 	k.msleep(321)
 	k.disable_servos()
 def get_top_noodle():
-	move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
+	#move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
 	move_servo(CLAW_PORT, CLAW_CLOSED)
-	drive(-20, -20)
+	drive(-45, -45)
 	move_servo_slowly(ARM_PORT, ARM_ON_NOODLE_PIPE, 3)
 	k.create_stop()
 def get_upper_noodle():
 	move_servo_slowly(ARM_PORT, ARM_UPPER_NOODLE, 5)
 	move_servo(CLAW_PORT, CLAW_CLOSED)
-	drive(-10, -10)
+	#drive(-10, -10)
 	move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
-	get_top_noodle()	
+	get_top_noodle()
 def get_middle_noodle():
 	pass
 def get_lower_noodle():
@@ -211,7 +210,7 @@ def turn_to_line_right():
 	#move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
 	k.msleep(500)
 	while (k.analog(ARM_TOPHAT_PORT) < SENSOR_BLACK):
-		drive(60, -60)
+		drive(60,-60)
 	k.create_stop()
 	k.msleep(500) #give a second for roomba to actually stop
 	while (k.analog(ARM_TOPHAT_PORT) > SENSOR_BLACK):
@@ -224,17 +223,19 @@ def main():
 	print_battery_info()
 	start_time = k.seconds()
 
-	#line up arm with free-standing structure left most rods
+	#line up arm with free-standing structure with middle rods
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10) #orig step: 5
 	move_servo(CLAW_PORT, CLAW_OPEN)
-	ihs_bindings.encoder_turn_degrees_v2(100, -40)
+	ihs_bindings.encoder_turn_degrees_v2(100, -45)
 	drive_to_line(200, 200, left_side, right_side) #orig speed: 100, 100
-	ihs_bindings.encoder_turn_degrees_v2(200, -2) #orig speed: 100, -2, deg originally -3 but DO NOT CHANGE since -2 is good
+	#ihs_bindings.encoder_turn_degrees_v2(200, 2) #orig speed: 100, -2, deg originally -3 but DO NOT CHANGE since -2 is good
 	k.msleep(100)
 	drive(-100, -100) #orig speed: -50, -50
 	k.msleep(300) #orig time: 500
 
 	k.create_stop()
+	drive(-5,-5)
+	k.msleep(100)
 
 	#grab free standing structure
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT, 3) ## lowers hand to grab Structure
@@ -285,12 +286,15 @@ def main():
 	#center on black line
 	#while (left_side() and right_side() and left_front() and right_front()) > BLACK and BACK_TOPHAT < BLACK:
 	#	drive(100, -100)
-	drive(50, -50)
-	move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
-	#ihs_bindings.encoder_turn_degrees_v2(100, 100) #orig speed: 100, 165 deg clockwise
-	turn_to_line_right()
+	ihs_bindings.encoder_turn_degrees_v2(100,90) #turns 90 to keep sensor on white
+	while left_front() > BLACK:
+		drive(50,-50)
+	while left_front() < BLACK:
+		drive(-50,50)
+	#ihs_binding .encoder_turn_degrees_v2(100, 100) #orig speed: 100, 165 deg clockwise
+	ihs_bindings.encoder_turn_degrees_v2(100,3)
 	drive(-150, -150) #orig speed: -150, -150
-	k.msleep(271) #orig time: 271
+	k.msleep(500) #orig time: 271
 
 	#INSERT NOODLE GRABBING CODE HERE:
 	#noodle garb
@@ -299,15 +303,42 @@ def main():
 	print("time", k.seconds() - start_time)
 	k.create_disconnect()
 	k.disable_servos()
-retry_connect(5)
-print_battery_info()
-get_top_noodle()
-ihs_bindings.encoder_turn_degrees_v2(100, 180)
-move_servo(CLAW_PORT, CLAW_OPEN)
-k.msleep(500)
-move_servo(CLAW_PORT, CLAW_CLOSED)
-ihs_bindings.encoder_turn_degrees_v2(100, 180)
-get_upper_noodle()
 #main()
-#noodle_grab()
+retry_connect(5)
+k.create_full()
+print_battery_info()
+#reset
+#move_servo_slowly(ARM_PORT,ARM_TOP_NOODLE,10)
+#move_servo_slowly(CLAW_PORT, CLAW_OPEN,10)
+
+
+
+def grab_turn():
+	ihs_bindings.encoder_turn_degrees_v2(100, 180)
+	#this is unfinished it has to put it on the rack
+	move_servo(CLAW_PORT, CLAW_OPEN)
+	k.msleep(500)
+	drive(-60,-60)
+	k.msleep(1500)
+	ihs_bindings.encoder_turn_degrees_v2(100,-180)
+
+	#while left_front() > BLACK:
+		#drive(60,-60)
+	#while left_front() < BLACK:
+		#drive(-60, 60)
+	#ihs_bindings.encoder_turn_degrees_v2(100,-7)
+
+	move_servo(CLAW_PORT, CLAW_OPEN)
+	#drive(-20,-20)
+	#k.msleep(100)
+	get_upper_noodle()
+
+
+
+get_top_noodle()
+grab_turn()
+#drive(-20,-20)
+#k.msleep(500)
+
 cleanup()
+
