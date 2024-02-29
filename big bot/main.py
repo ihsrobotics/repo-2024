@@ -4,6 +4,7 @@ k = CDLL(kipr)
 
 import ihs_bindings
 
+ROD_PORT = 1
 CLAW_PORT = 0
 ARM_PORT = 3
 ARM_TOPHAT_PORT = 0
@@ -16,24 +17,28 @@ ARM_DOWN = 40
 CLAW_OPEN = 900
 CLAW_CLOSED = 1650
 """
+ROD_LINE = 1098
+ROD_SIDE = 2047
 ARM_STRAIGHT_UP = 1300
 ARM_STRAIGHT = 200
 ARM_GRAB = 125
 ARM_DOWN = 70
 ARM_ON_RACK = 500
 ARM_ON_NOODLE_PIPE = 1050 #orig: 950 
-ARM_TOP_NOODLE = 700
-ARM_UPPER_NOODLE = 540
+ARM_TOP_NOODLE = 770
+ARM_UPPER_NOODLE = 588
 ARM_MIDDLE_NOODLE = 400 #placeholder
 ARM_LOWER_NOODLE = 0
 ARM_BOTTOM_NOODLE = 0 #placeholder 
 CLAW_OPEN  = 110
-CLAW_CLOSED = 1650
+CLAW_CLOSED = 650
 
-SENSOR_BLACK = 4000 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
+SENSOR_BLACK = 3100 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
 BLACK = 2600 ## > BLACK is white, < BLACK is black
 
 #sensor shortcuts
+def rod():
+	return k.analog(1)
 def left_side():
 	return k.get_create_lcliff_amt()
 def left_front():
@@ -190,12 +195,19 @@ def place_noodle_on_rack():
 	k.disable_servos()
 def get_top_noodle():
 	#move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
+	drive(-100,-100)
+	k.msleep(100)
 	move_servo(CLAW_PORT, CLAW_CLOSED)
 	drive(-45, -45)
 	move_servo_slowly(ARM_PORT, ARM_ON_NOODLE_PIPE, 3)
 	k.create_stop()
 def get_upper_noodle():
+
 	move_servo_slowly(ARM_PORT, ARM_UPPER_NOODLE, 5)
+	k.msleep(500)
+	drive(-100,-100)
+	k.msleep(100)
+
 	move_servo(CLAW_PORT, CLAW_CLOSED)
 	#drive(-10, -10)
 	move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
@@ -320,17 +332,15 @@ def grab_turn():
 	k.msleep(500)
 	drive(-60,-60)
 	k.msleep(1500)
-	ihs_bindings.encoder_turn_degrees_v2(100,-180)
-
-	#while left_front() > BLACK:
-		#drive(60,-60)
-	#while left_front() < BLACK:
-		#drive(-60, 60)
-	#ihs_bindings.encoder_turn_degrees_v2(100,-7)
-
+	ihs_bindings.encoder_turn_degrees_v2(100,-150)
+	move_servo(ROD_PORT, ROD_LINE)
+	k.msleep(500)
+	while k.analog(5) < SENSOR_BLACK:
+		drive(-60,60)
+	while k.analog(5) > SENSOR_BLACK:
+		drive(60, -60)
+	drive(0, 0)
 	move_servo(CLAW_PORT, CLAW_OPEN)
-	#drive(-20,-20)
-	#k.msleep(100)
 	get_upper_noodle()
 
 
@@ -339,6 +349,12 @@ get_top_noodle()
 grab_turn()
 #drive(-20,-20)
 #k.msleep(500)
+"""
+while k.analog(5) < SENSOR_BLACK:
+	drive(60, -60)
 
+while k.analog(5) > SENSOR_BLACK:
+	drive(60, -60)
+"""
 cleanup()
 
