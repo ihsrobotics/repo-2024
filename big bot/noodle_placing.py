@@ -27,6 +27,7 @@ ARM_ON_RACK = 500
 
 CLAW_OPEN  = 986
 CLAW_CLOSED = 1968
+CLAW_GRAB = 1220
 
 SIDE_LEFT = 0
 SIDE_RIGHT = 2047
@@ -282,7 +283,8 @@ def main():
 
 def reset():
     move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
-    move_servo_slowly(CLAW_PORT, CLAW_CLOSED, 5)
+    move_servo_slowly(CLAW_PORT, CLAW_GRAB, 5)
+
 
 def first_pipe():
     # put on hold while the boom arm is being developed
@@ -336,7 +338,7 @@ def third_pipe():
     while (left_front() > BLACK):
         drive(-150, -150)
     ihs_bindings.encoder_turn_degrees_v2(100, 2)
-    drive(150, 150)
+    drive(-150, -150)
     k.msleep(300)
     drive(0, 0)
     move_servo_slowly(ARM_PORT, 875, 5)
@@ -350,8 +352,23 @@ def third_pipe():
 #def fifth_pipe():
     # insert code
 
+def turn_180(third_pipe=False):
+    drive_to_line(150, 150, left_side, right_side
+    while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
+        drive(150, 150)
+    drive(150, -150)
+    k.msleep(300)
+    while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
+        drive(150, -150)
+    if third_pipe == True:
+        drive(150, -150)
+        k.msleep(500)
+        while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
+            drive(150, -150)
+
 #main
 retry_connect(5)
 #reset()
-third_pipe()
+#third_pipe()
+turn_180(True)
 cleanup()
