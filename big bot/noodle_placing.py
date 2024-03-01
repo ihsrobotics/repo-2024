@@ -32,7 +32,7 @@ CLAW_GRAB = 1220
 SIDE_LEFT = 0
 SIDE_RIGHT = 2047
 
-SENSOR_BLACK = 3000 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
+SENSOR_BLACK = 2500 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
 BLACK = 2600 ## > BLACK is white, < BLACK is black
 
 #sensor shortcuts
@@ -352,23 +352,61 @@ def third_pipe():
 #def fifth_pipe():
     # insert code
 
-def turn_180(third_pipe=False):
-    drive_to_line(150, 150, left_side, right_side
+def turn_180(facing_third_pipe=False):
+    drive_to_line(150, 150, left_side, right_side)
+    drive(-150, -150)
+    k.msleep(300)
+    drive_to_line(150, 150, left_side, right_side)
     while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
         drive(150, 150)
+    drive(150, 150)
+    k.msleep(1150)
+    """#THIS STOP/MSLEEP IS TO TEST IF THE ROBOT IS ACTUALLY TURNING 180 DEG ACCURATELY
+    drive(0, 0)
+    k.msleep(5000)"""
     drive(150, -150)
-    k.msleep(300)
+    k.msleep(1250)
     while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
         drive(150, -150)
-    if third_pipe == True:
+    if facing_third_pipe == True:
         drive(150, -150)
-        k.msleep(500)
+        k.msleep(1000)
         while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
             drive(150, -150)
+    k.msleep(250)
+    drive_to_line(150, 150, left_side, right_side)
+    drive(-150, -150)
+    k.msleep(300)
+    drive_to_line(150, 150, left_side, right_side)
+    #drive_to_line_white(150, 150, left_side, right_side)
+    drive(0, 0)
 
 #main
 retry_connect(5)
 #reset()
 #third_pipe()
+
+#THIS IS FOR TESTING TO SEE IF THE BOT ACTUALLY ACCURATELY ROTATES 180 !!! HELP
+"""drive_to_line(150, 150, left_side, right_side)
+while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
+        drive(150, 150)
+drive(-150, -150)
+k.msleep(1050)
+drive(0, 0)
+k.msleep(2000)"""
+
 turn_180(True)
+k.msleep(3000)
+drive(-150, -150)
+k.msleep(500)
+turn_180()
+
+"""drive(-150, -150)
+k.msleep(700)
+turn_180()"""
+"""turn_180()
+drive(-150, -150)
+k.msleep(1050)
+drive(0, 0)"""
+
 cleanup()
