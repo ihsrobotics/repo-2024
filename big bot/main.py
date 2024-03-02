@@ -3,65 +3,11 @@ kipr = "/usr/local/lib/libkipr.so"
 k = CDLL(kipr)
 
 import ihs_bindings
+import sys
 
-ROD_PORT = 1
-CLAW_PORT = 0
-ARM_PORT = 3
-ARM_TOPHAT_PORT = 0
-"""
-4176 bot
-ARM_STRAIGHT_UP = 1300
-ARM_STRAIGHT = 200
-ARM_DOWN = 40
-
-CLAW_OPEN = 900
-CLAW_CLOSED = 1650
-"""
-ROD_LINE = 1098
-ROD_SIDE = 2047
-ARM_STRAIGHT_UP = 1300
-ARM_STRAIGHT = 200
-ARM_GRAB = 125
-ARM_DOWN = 70
-ARM_ON_RACK = 500
-ARM_ON_NOODLE_PIPE = 1050 #orig: 950 
-ARM_TOP_NOODLE = 770
-ARM_UPPER_NOODLE = 588
-ARM_MIDDLE_NOODLE = 400 #placeholder
-ARM_LOWER_NOODLE = 0
-ARM_BOTTOM_NOODLE = 0 #placeholder 
-CLAW_OPEN  = 110
-CLAW_CLOSED = 650
-
-SENSOR_BLACK = 3100 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
-BLACK = 2600 ## > BLACK is white, < BLACK is black
-
-#sensor shortcuts
-def rod():
-	return k.analog(1)
-def left_side():
-	return k.get_create_lcliff_amt()
-def left_front():
-	return k.get_create_lfcliff_amt()
-def right_side():
-	return k.get_create_rcliff_amt()
-def right_front():
-	return k.get_create_rfcliff_amt()
-def drive(left_speed, right_speed):
-	k.create_drive_direct(left_speed, right_speed)
-	return
-def farthest_left_distance():
-	return k.get_create_llight_bump_amt()
-def middle_left_distance():
-	return k. get_create_lflightbump_amt()
-def foward_left_distance():
-	return k.get_create_lclightbump_amt()
-def farthest_right_distance():
-        return k.get_create_rlight_bump_amt()
-def middle_right_distance():
-        return k. get_create_rflightbump_amt()
-def foward_right_distance():
-        return k.get_create_rclightbump_amt()
+sys.path.append("/home/pi/Documents/IME_files/grabNoodle/include")
+from sensorshortcuts import *
+from constants import *
 #sensor test
 ##while True:
 ##	print (left_side(), "left side")
@@ -112,17 +58,15 @@ def move_servo(port, end_position):
 
 #square up
 def drive_to_line(left_speed, right_speed, left_sensor=left_front, right_sensor=right_front):
-	detect = 0
 	print (left_sensor(), right_sensor())
 	while (left_sensor() > BLACK and right_sensor() > BLACK):
 		drive(left_speed, right_speed)
 	while (left_sensor() > BLACK):
 		drive(left_speed, 0)
-	detect += 1
-	print (detect)
 	while (right_sensor() > BLACK):
 		drive(0, right_speed)
-	detect += 1
+	while (left_sensor() > BLACK):
+		drive(left_speed, 0)
 	drive(0,0)
 	return
 #gyro_turn_degrees_v2(100,180)
@@ -195,8 +139,8 @@ def place_noodle_on_rack():
 	k.disable_servos()
 def get_top_noodle():
 	#move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
-	drive(-100,-100)
-	k.msleep(100)
+	drive(-50,-50)
+	k.msleep(200)
 	move_servo(CLAW_PORT, CLAW_CLOSED)
 	drive(-45, -45)
 	move_servo_slowly(ARM_PORT, ARM_ON_NOODLE_PIPE, 3)
@@ -204,11 +148,16 @@ def get_top_noodle():
 def get_upper_noodle():
 
 	move_servo_slowly(ARM_PORT, ARM_UPPER_NOODLE, 5)
-	k.msleep(500)
-	drive(-100,-100)
-	k.msleep(100)
-
+	k.msleep(1000)
+	drive(-50,-50)
+	k.msleep(200)
+	drive(0,0)
 	move_servo(CLAW_PORT, CLAW_CLOSED)
+	for i in range(3):
+		move_servo(CLAW_PORT, CLAW_CLOSED-300)
+		k.msleep(100)
+		move_servo(CLAW_PORT, CLAW_CLOSED)
+		k.msleep(100)
 	#drive(-10, -10)
 	move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
 	get_top_noodle()
@@ -221,11 +170,11 @@ def get_bottom_noodle():
 def turn_to_line_right():
 	#move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
 	k.msleep(500)
-	while (k.analog(ARM_TOPHAT_PORT) < SENSOR_BLACK):
+	while (k.analog(ARM_TOPHAT_PORT) < ROD_TOPHAT_BLACK):
 		drive(60,-60)
 	k.create_stop()
 	k.msleep(500) #give a second for roomba to actually stop
-	while (k.analog(ARM_TOPHAT_PORT) > SENSOR_BLACK):
+	while (k.analog(ARM_TOPHAT_PORT) > ROD_TOPHAT_BLACK):
 		drive(-60, 60)
 def main():
 	success = retry_connect(5) ## connects to but, tries 5 times
@@ -328,24 +277,49 @@ print_battery_info()
 def grab_turn():
 	ihs_bindings.encoder_turn_degrees_v2(100, 180)
 	#this is unfinished it has to put it on the rack
-	move_servo(CLAW_PORT, CLAW_OPEN)
-	k.msleep(500)
 	drive(-60,-60)
-	k.msleep(1500)
-	ihs_bindings.encoder_turn_degrees_v2(100,-150)
-	move_servo(ROD_PORT, ROD_LINE)
-	k.msleep(500)
-	while k.analog(5) < SENSOR_BLACK:
-		drive(-60,60)
-	while k.analog(5) > SENSOR_BLACK:
-		drive(60, -60)
-	drive(0, 0)
+	k.msleep(1700)
 	move_servo(CLAW_PORT, CLAW_OPEN)
-	get_upper_noodle()
+	k.msleep(500)
+	
+	ihs_bindings.encoder_turn_degrees_v2(100,90)
+	drive(-100,-100)
+	k.msleep(1000)
+	drive(0,0)
+	drive_to_line(100,100,left_side,right_side)
+	drive_to_line_white(100,100,left_side,right_side)
+	
+	drive(0,0)
+	ihs_bindings.encoder_turn_degrees_v2(100,60)
+	move_servo(ROD_PORT, ROD_LINE)
+	
+	move_servo_slowly(ARM_PORT, ARM_DOWN,10)
 
+	k.msleep(500)
+	while k.analog(5) < ROD_TOPHAT_BLACK:
+		drive(30,-30)
+	drive(0,0)
+	while k.analog(5) > ROD_TOPHAT_BLACK:
+		drive(30, -30)
+	drive(0,0)
+	move_servo(CLAW_PORT, CLAW_OPEN)
+	while (k.analog(ARM_TOPHAT_PORT)<ARM_TOPHAT_BLACK):
+		drive(30,-30)
+	#get_upper_noodle()
+	
 
 
 get_top_noodle()
+#while (k.analog(ARM_TOPHAT_PORT) < ARM_TOPHAT_BLACK):
+	#drive(50, -50)
+#drive(0, 0)
+
+#start_time = k.seconds()
+#while (seconds() - start_time < 1):
+	#if (k.analog(ARM_TOPHAT_PORT) > ARM_TOPHAT_BLACK):
+		#drive(-60, -30)
+	#if (k.analog(ARM_TOPHAT_PORT) < ARM_TOPHAT_BLACK):
+		#drive(-30, -60)
 grab_turn()
 #drive(-20,-20)
 #k.msleep(500)
