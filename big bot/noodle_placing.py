@@ -3,160 +3,18 @@ kipr = "/usr/local/lib/libkipr.so"
 k = CDLL(kipr)
 
 import ihs_bindings
+import sys
+# print("debugger")
+# import time
+# time.sleep(3)
+# add ../include to the import path
+sys.path.append("/home/pi/Documents/IME_files/BigBotNoodlePlacement2024/include")
 
-CLAW_PORT = 0
-ARM_PORT = 2
-ARM_TOPHAT_PORT = 0
-SIDE_SERVO_PORT = 3
-SIDE_TOPHAT_PORT = 5
+# print("debugger 2")
+# time.sleep(3)
 
-"""
-4176 bot
-ARM_STRAIGHT_UP = 1300
-ARM_STRAIGHT = 200
-ARM_DOWN = 40
-
-CLAW_OPEN = 986
-CLAW_CLOSED = 1968
-"""
-ARM_STRAIGHT_UP = 1300
-ARM_STRAIGHT = 200
-ARM_GRAB = 100
-ARM_DOWN = 40
-ARM_ON_RACK = 500
-
-CLAW_OPEN  = 986
-CLAW_CLOSED = 1968
-CLAW_GRAB = 1220
-
-SIDE_LEFT = 0
-SIDE_RIGHT = 2047
-
-SENSOR_BLACK = 2500 ## < SENSORBLACK is white, > SENSORBLACK is black (USE FOR NON-ROOMBA SENSORS)
-BLACK = 2600 ## > BLACK is white, < BLACK is black
-
-#sensor shortcuts
-def left_side():
-	return k.get_create_lcliff_amt()
-def left_front():
-	return k.get_create_lfcliff_amt()
-def right_side():
-	return k.get_create_rcliff_amt()
-def right_front():
-	return k.get_create_rfcliff_amt()
-def drive(left_speed, right_speed):
-	k.create_drive_direct(left_speed, right_speed)
-	return
-def farthest_left_distance():
-	return k.get_create_llight_bump_amt()
-def middle_left_distance():
-	return k. get_create_lflightbump_amt()
-def foward_left_distance():
-	return k.get_create_lclightbump_amt()
-def farthest_right_distance():
-    return k.get_create_rlight_bump_amt()
-def middle_right_distance():
-    return k. get_create_rflightbump_amt()
-def foward_right_distance():
-    return k.get_create_rclightbump_amt()
-#sensor test
-##while True:
-##	print (left_side(), "left side")
-##	print (" ")
-#	print (left_front(), "left front")
-#	print (" ")
-#	print (right_side(), "right side")
-#	print (" ")
-#	print (right_front(), "right front")
-#	print (" ")
-
-def retry_connect(n):
-	for i in range(n):
-		print("Attempt to connect")
-		success = k.create_connect_once()
-		if success:
-			print("Connected ^w^")
-			return True
-	return False
-def cleanup():
-	k.create_disconnect()
-	k.disable_servos()
-# higher step value = faster servo move
-# the servo is disabled after calling the function
-# to protect microservoes
-def move_servo_slowly(port, end_position, step=1):
-	start_position = k.get_servo_position(port)
-	if end_position == start_position:
-		return
-	print(start_position)
-	if start_position > end_position:
-		step = -step
-	interval = range(start_position, end_position, step)
-	k.enable_servo(port)
-	for position in interval:
-		k.set_servo_position(port, position)
-		k.msleep(10)
-	k.disable_servo(port)
-
-# instantly moves servo
-# enables servo before moving servo
-# disables servo after to protect microservoes
-def move_servo(port, end_position):
-	k.enable_servo(port)
-	k.set_servo_position(port, end_position)
-	k.msleep(100)
-	k.disable_servo(port)
-
-#square up
-def drive_to_line(left_speed, right_speed, left_sensor=left_front, right_sensor=right_front):
-	detect = 0
-	print (left_sensor(), right_sensor())
-	while (left_sensor() > BLACK and right_sensor() > BLACK):
-		drive(left_speed, right_speed)
-	if detect < 2:
-		while (left_sensor() > BLACK):
-			drive(left_speed, 0)
-		detect += 1
-		print (detect)
-		while (right_sensor() > BLACK):
-			drive(0, right_speed)
-		detect += 1
-		drive(0,0)
-		return
-
-#square up ON WHITE!!!!
-def drive_to_line_white(left_speed, right_speed, left_sensor, right_sensor):
-	print (left_sensor(), right_sensor())
-	while (left_sensor() < BLACK and right_sensor() < BLACK):
-		drive(left_speed, right_speed)
-	while (left_sensor() < BLACK):
-		drive(left_speed, 0)
-	while(right_sensor() < BLACK):
-		drive(0, right_speed)
-	return
-
-def line_follow(port, seconds):
-	end_time = seconds*1000
-	start = k.seconds()
-	while (k.seconds() - start < end_time):
-		if (port() < BLACK):
-			k.create_drive_direct(250, 150)
-		if(port() > BLACK):
-			k.create_drive_direct(150, 250)
-def test_drag():
-	success = retry_connect(5)
-	if not success:
-		print("Failed to connect!!!")
-		return -1
-	move_servo_slowly(ARM_PORT, ARM_STRAIGHT, 5)
-	move_servo(CLAW_PORT, CLAW_CLOSED)
-	k.create_drive_direct(100, 100)
-	k.msleep(10000)
-	k.create_disconnect()
-def print_battery_info():
-	print("Capacity", k.get_create_battery_capacity())
-	print("Charge", k.get_create_battery_charge())
-	print("Percentage", k.get_create_battery_charge() / k.get_create_battery_capacity() * 100)
+from kipr_functions import *
+# from config_loader import *
 
 """
 def noodle_grab():
@@ -352,7 +210,7 @@ def third_pipe():
 #def fifth_pipe():
     # insert code
 
-def turn_180(facing_third_pipe=False):
+def turn_180(facing_third_pipe=True):
     drive_to_line(150, 150, left_side, right_side)
     drive(-150, -150)
     k.msleep(300)
@@ -365,7 +223,7 @@ def turn_180(facing_third_pipe=False):
     drive(0, 0)
     k.msleep(5000)"""
     drive(150, -150)
-    k.msleep(1250)
+    k.msleep(1500)
     while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
         drive(150, -150)
     if facing_third_pipe == True:
@@ -373,40 +231,67 @@ def turn_180(facing_third_pipe=False):
         k.msleep(1000)
         while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
             drive(150, -150)
-    k.msleep(250)
-    drive_to_line(150, 150, left_side, right_side)
+    drive(-150, 150)
+    k.msleep(50)
+
+    ao()
+    # k.msleep(250)
+    # #drive_to_line(150, 150, left_side, right_side)
     drive(-150, -150)
     k.msleep(300)
     drive_to_line(150, 150, left_side, right_side)
-    #drive_to_line_white(150, 150, left_side, right_side)
-    drive(0, 0)
-
-#main
-retry_connect(5)
-#reset()
-#third_pipe()
-
-#THIS IS FOR TESTING TO SEE IF THE BOT ACTUALLY ACCURATELY ROTATES 180 !!! HELP
-"""drive_to_line(150, 150, left_side, right_side)
-while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
+    while k.analog(SIDE_TOPHAT_PORT) > SENSOR_BLACK:
         drive(150, 150)
-drive(-150, -150)
-k.msleep(1050)
-drive(0, 0)
-k.msleep(2000)"""
+    drive(-150, -150)
+    k.msleep(125)
+    ao()
 
-turn_180(True)
-k.msleep(3000)
-drive(-150, -150)
-k.msleep(500)
-turn_180()
 
-"""drive(-150, -150)
-k.msleep(700)
-turn_180()"""
-"""turn_180()
-drive(-150, -150)
-k.msleep(1050)
-drive(0, 0)"""
 
-cleanup()
+# #main
+# retry_connect(5)
+# #reset()
+# #third_pipe()
+
+# #THIS IS FOR TESTING TO SEE IF THE BOT ACTUALLY ACCURATELY ROTATES 180 !!! HELP
+# """drive_to_line(150, 150, left_side, right_side)
+# while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
+#         drive(150, 150)
+# drive(-150, -150)
+# k.msleep(1050)
+# drive(0, 0)
+# k.msleep(2000)"""
+
+# turn_180(True)
+# k.msleep(3000)
+# drive(-150, -150)
+# k.msleep(500)
+# turn_180()
+
+# """drive(-150, -150)
+# k.msleep(700)
+# turn_180()"""
+# """turn_180()
+# drive(-150, -150)
+# k.msleep(1050)
+# drive(0, 0)"""
+
+# cleanup()
+
+if __name__ == "__main__":
+	print("hello world")
+	#print(configs)
+	retry_connect(5)
+	start = k.seconds()
+
+	turn_180(facing_third_pipe=False)
+	k.msleep(500)
+	drive(-150, -150)
+	k.msleep(500)
+	ao()
+	turn_180(facing_third_pipe=False)
+	drive(-150, -150)
+	k.msleep(1000)
+
+	print(k.seconds() - start)
+	cleanup()
