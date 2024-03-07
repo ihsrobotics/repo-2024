@@ -177,13 +177,13 @@ def third_pipe():
         if(left_front() > BLACK):
             k.create_drive_direct(250, 150)
     # once at the top right vertical tape, drive slightly forward to somewhat center the bot
-    drive(300, 300)
-    k.msleep(250)
+    drive(150, 150)
+    k.msleep(500)
     # rotate the bot to have the arm lower down outside of the black tape
     drive(150, -150)
     k.msleep(700)
-    drive(0, 0)
-    move_servo_slowly(ARM_PORT, 0, 10)
+    ao()
+    servo(ARM_PORT, 0, 10)
     # wait to ensure that the arm is all the way down
     k.msleep(500)
     # rotate the bot until the tophat port at the end of the arm is aligned with the trv tape
@@ -192,14 +192,16 @@ def third_pipe():
     drive(-50, 50)
     k.msleep(50)
     drive(0, 0)
-    move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
+    servo(ARM_PORT, ARM_STRAIGHT_UP, 10)
+    k.msleep(500)
     while (left_front() > BLACK):
         drive(-150, -150)
     ihs_bindings.encoder_turn_degrees_v2(100, 2)
     drive(-150, -150)
     k.msleep(300)
     drive(0, 0)
-    move_servo_slowly(ARM_PORT, 875, 5)
+    servo(ARM_PORT, 875, 5)
+    k.msleep(500)
     move_servo(CLAW_PORT, CLAW_OPEN)
     
 
@@ -209,42 +211,6 @@ def third_pipe():
 
 #def fifth_pipe():
     # insert code
-
-def turn_180(facing_third_pipe=True):
-    drive_to_line(150, 150, left_side, right_side)
-    drive(-150, -150)
-    k.msleep(300)
-    drive_to_line(150, 150, left_side, right_side)
-    while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
-        drive(150, 150)
-    drive(150, 150)
-    k.msleep(1150)
-    """#THIS STOP/MSLEEP IS TO TEST IF THE ROBOT IS ACTUALLY TURNING 180 DEG ACCURATELY
-    drive(0, 0)
-    k.msleep(5000)"""
-    drive(150, -150)
-    k.msleep(1500)
-    while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
-        drive(150, -150)
-    if facing_third_pipe == True:
-        drive(150, -150)
-        k.msleep(1000)
-        while k.analog(SIDE_TOPHAT_PORT) < SENSOR_BLACK:
-            drive(150, -150)
-    drive(-150, 150)
-    k.msleep(50)
-
-    ao()
-    # k.msleep(250)
-    # #drive_to_line(150, 150, left_side, right_side)
-    drive(-150, -150)
-    k.msleep(300)
-    drive_to_line(150, 150, left_side, right_side)
-    while k.analog(SIDE_TOPHAT_PORT) > SENSOR_BLACK:
-        drive(150, 150)
-    drive(-150, -150)
-    k.msleep(125)
-    ao()
 
 
 
@@ -282,16 +248,9 @@ if __name__ == "__main__":
 	print("hello world")
 	#print(configs)
 	retry_connect(5)
+	k.enable_servos()
 	start = k.seconds()
-
-	turn_180(facing_third_pipe=False)
-	k.msleep(500)
-	drive(-150, -150)
-	k.msleep(500)
-	ao()
-	turn_180(facing_third_pipe=False)
-	drive(-150, -150)
-	k.msleep(1000)
+	third_pipe()
 
 	print(k.seconds() - start)
 	cleanup()
