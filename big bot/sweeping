@@ -1,0 +1,42 @@
+from ctypes import CDLL
+kipr = "/usr/local/lib/libkipr.so"
+k = CDLL(kipr)
+
+import ihs_bindings
+import sys
+# print("debugger")
+# import time
+# time.sleep(3)
+# add ../include to the import path
+sys.path.append("/home/pi/Documents/IME_files/BigBotSweeping2024/include")
+
+# print("debugger 2")
+# time.sleep(3)
+
+from kipr_functions import *
+#from config_loader import *
+
+MIN = 400
+MAX = 1980
+
+k.enable_servos()
+
+def sweeping(limit):
+    amount = 0 
+    while amount < limit:
+        while get_servo_position(FRONT_SERVO_PORT) < MAX:
+            servo(FRONT_SERVO_PORT, MAX)
+            msleep(500)
+        while get_servo_position(FRONT_SERVO_PORT) > MIN:
+            servo(FRONT_SERVO_PORT, MIN)
+            msleep(500)
+        amount += 1
+
+#__name__ = "__main__"
+if __name__ == "__main__":
+    print("hello world")
+    #print(configs)
+    retry_connect(5)
+    start = k.seconds()
+    drive(-200, -200)
+    sweeping(4)
