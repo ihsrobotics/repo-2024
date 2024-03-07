@@ -4,6 +4,7 @@ k = CDLL(kipr)
 
 import ihs_bindings
 import sys
+import math
 
 sys.path.append("/home/pi/Documents/IME_files/grabNoodle/include")
 from sensorshortcuts import *
@@ -30,22 +31,27 @@ def retry_connect(n):
 def cleanup():
 	k.create_disconnect()
 	k.disable_servos()
-# higher step value = faster servo move
+# higher delay value = slower servo move
 # the servo is disabled after calling the function
 # to protect microservoes
-def move_servo_slowly(port, end_position, step=1):
-	start_position = k.get_servo_position(port)
-	if end_position == start_position:
-		return
-	print(start_position)
-	if start_position > end_position:
-		step = -step
-	interval = range(start_position, end_position, step)
-	k.enable_servo(port)
-	for position in interval:
-		k.set_servo_position(port, position)
-		k.msleep(10)
-	k.disable_servo(port)
+def move_servo_slowly(port, end_position, delay=0):
+    position = k.get_servo_position(port)
+    if end_position == position:
+        return
+    elif delay == 0:
+        k.set_servo_position(port, end_position)
+        msleep(100)
+        return
+    while k.get_servo_position(port) < end_position and k.get_servo_position(port)+5 < 2048:
+        position = k.get_servo_position(port)+5
+        k.set_servo_position(port, position)
+        k.msleep(delay)
+    while k.get_servo_position(port) > end_position and k.get_servo_position(port)-5 > 0:
+        position = k.get_servo_position(port)-5
+        k.set_servo_position(port, position)
+        k.msleep(delay)
+    k.set_servo_position(port, end_position)
+
 
 # instantly moves servo
 # enables servo before moving servo
@@ -56,6 +62,14 @@ def move_servo(port, end_position):
 	k.msleep(100)
 	k.disable_servo(port)
 
+# chews the claw by opening and closing it
+# helps grab the noodle better
+def chew_claw(count):
+	for i in range(count, 0, -1):
+		move_servo(CLAW_PORT, int(CLAW_CLOSED + (CLAW_OPEN - CLAW_CLOSED) * i/count))
+		k.msleep(1)
+		move_servo(CLAW_PORT,CLAW_CLOSED)
+		k.msleep(1)
 #square up
 def drive_to_line(left_speed, right_speed, left_sensor=left_front, right_sensor=right_front):
 	print (left_sensor(), right_sensor())
@@ -142,8 +156,9 @@ def get_top_noodle():
 	drive(-50,-50)
 	k.msleep(200)
 	move_servo(CLAW_PORT, CLAW_CLOSED)
+	k.create_stop()
 	drive(-45, -45)
-	move_servo_slowly(ARM_PORT, ARM_ON_NOODLE_PIPE, 3)
+	move_servo_slowly(ARM_PORT, ARM_ON_NOODLE_PIPE, 10)
 	k.create_stop()
 def get_upper_noodle():
 
@@ -153,11 +168,6 @@ def get_upper_noodle():
 	k.msleep(200)
 	drive(0,0)
 	move_servo(CLAW_PORT, CLAW_CLOSED)
-	for i in range(3):
-		move_servo(CLAW_PORT, CLAW_CLOSED-300)
-		k.msleep(100)
-		move_servo(CLAW_PORT, CLAW_CLOSED)
-		k.msleep(100)
 	#drive(-10, -10)
 	move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
 	get_top_noodle()
@@ -277,8 +287,8 @@ print_battery_info()
 def grab_turn():
 	ihs_bindings.encoder_turn_degrees_v2(100, 180)
 	#this is unfinished it has to put it on the rack
-	drive(-60,-60)
-	k.msleep(1700)
+	drive(-70,-70)
+	k.msleep(1500)
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	k.msleep(500)
 	
@@ -290,26 +300,41 @@ def grab_turn():
 	drive_to_line_white(100,100,left_side,right_side)
 	
 	drive(0,0)
+	
+	drive(100,100)
+	k.msleep(200)
+
 	ihs_bindings.encoder_turn_degrees_v2(100,60)
-	move_servo(ROD_PORT, ROD_LINE)
+	#move_servo(ROD_PORT, ROD_LINE)
 	
 	move_servo_slowly(ARM_PORT, ARM_DOWN,10)
 
 	k.msleep(500)
-	while k.analog(5) < ROD_TOPHAT_BLACK:
-		drive(30,-30)
-	drive(0,0)
-	while k.analog(5) > ROD_TOPHAT_BLACK:
-		drive(30, -30)
-	drive(0,0)
+	#while k.analog(5) < ROD_TOPHAT_BLACK:
+		#drive(0,0)
+	#while k.analog(5) > ROD_TOPHAT_BLACK:
+		#drive(30, -30)
+	#drive(0,0)
+	move_servo(ROD_PORT,ROD_LINE)
 	move_servo(CLAW_PORT, CLAW_OPEN)
-	while (k.analog(ARM_TOPHAT_PORT)<ARM_TOPHAT_BLACK):
+	k.msleep(100)
+
+	while (k.analog(ARM_TOPHAT_PORT)<ARM_TOPHAT_BLACK or k.analog(ROD_TOPHAT)<ROD_TOPHAT_BLACK):
 		drive(30,-30)
+	print("EXIT")
+	drive(0,0)
+
+
+	#k.msleep(100)
+	#move_servo(ARM_PORT, ARM_UPPER_NOODLE)
+	#k.msleep(100)
+	#drive(-100,-100)
+	#k.msleep(850)
 	#get_upper_noodle()
 	
 
-
-get_top_noodle()
+#chew_claw(5)
+#get_top_noodle()
 #while (k.analog(ARM_TOPHAT_PORT) < ARM_TOPHAT_BLACK):
 	#drive(50, -50)
 #drive(0, 0)
@@ -320,7 +345,7 @@ get_top_noodle()
 		#drive(-60, -30)
 	#if (k.analog(ARM_TOPHAT_PORT) < ARM_TOPHAT_BLACK):
 		#drive(-30, -60)
-grab_turn()
+#grab_turn()
 #drive(-20,-20)
 #k.msleep(500)
 """
@@ -330,5 +355,6 @@ while k.analog(5) < SENSOR_BLACK:
 while k.analog(5) > SENSOR_BLACK:
 	drive(60, -60)
 """
+chew_claw(5)
+get_upper_noodle()
 cleanup()
-
