@@ -164,45 +164,61 @@ def first_pipe():
     # note: move back abt 3000 ms
 
 def third_pipe():
-    # square up with line running through center and raise arm
-    drive_to_line(150, 150, left_side, right_side)
-    #move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
-    # move off of center line
-    drive(150, 150)
-    k.msleep(1500)
-    # line follow on top right horizontal tape, stop when reaching the top right vertical tape
-    while (left_side() > BLACK):
-        if (left_front() < BLACK):
-            k.create_drive_direct(150, 250)
-        if(left_front() > BLACK):
-            k.create_drive_direct(250, 150)
-    # once at the top right vertical tape, drive slightly forward to somewhat center the bot
-    drive(150, 150)
-    k.msleep(500)
-    # rotate the bot to have the arm lower down outside of the black tape
-    drive(150, -150)
-    k.msleep(700)
+    # # square up with line running through center and raise arm
+    # drive_to_line(150, 150, left_side, right_side)
+    # #move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
+    # # move off of center line
+    # drive(150, 150)
+    # k.msleep(1500)
+    # # line follow on top right horizontal tape, stop when reaching the top right vertical tape
+    # while (left_side() > BLACK):
+    #     if (left_front() < BLACK):
+    #         k.create_drive_direct(150, 250)
+    #     if(left_front() > BLACK):
+    #         k.create_drive_direct(250, 150)
+    # # once at the top right vertical tape, drive slightly forward to somewhat center the bot
+    # drive(150, 150)
+    # k.msleep(500)
+    # # rotate the bot to have the arm lower down outside of the black tape
+    # drive(150, -150)
+    # k.msleep(700)
+    # ao()
+    # move_servo_slowly(ARM_PORT, 0, 20)
+    # #move_servo(ARM_PORT, 0)
+    # # wait to ensure that the arm is all the way down
+    # k.msleep(1000)
+    # # rotate the bot until the tophat port at the end of the arm is aligned with the trv tape
+    # while (k.analog(ARM_TOPHAT_PORT) < SENSOR_BLACK):
+    #     drive(25, -25)
+    # drive(-50, 50)
+    # k.msleep(50)
+    # drive(0, 0)
+    # move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
+    # #move_servo(ARM_PORT, ARM_STRAIGHT_UP)
+    # k.msleep(500)
+    # while (left_front() > BLACK):
+    #     drive(-150, -150)
+    # ihs_bindings.encoder_turn_degrees_v2(100, 2)
+    # drive(-150, -150)
+    # k.msleep(300)
+    # drive(0, 0)
+    move_servo(SIDE_SERVO_PORT, SIDE_LEFT)
+    move_servo_slowly(ARM_PORT, 792, 10)
+    turn_180(True)
+    drive(-75, -75)
+    k.msleep(1000)
     ao()
-    servo(ARM_PORT, 0, 10)
-    # wait to ensure that the arm is all the way down
-    k.msleep(500)
-    # rotate the bot until the tophat port at the end of the arm is aligned with the trv tape
-    while (k.analog(ARM_TOPHAT_PORT) < SENSOR_BLACK):
-        drive(25, -25)
-    drive(-50, 50)
-    k.msleep(50)
-    drive(0, 0)
-    servo(ARM_PORT, ARM_STRAIGHT_UP, 10)
-    k.msleep(500)
-    while (left_front() > BLACK):
-        drive(-150, -150)
-    ihs_bindings.encoder_turn_degrees_v2(100, 2)
-    drive(-150, -150)
-    k.msleep(300)
-    drive(0, 0)
-    servo(ARM_PORT, 875, 5)
-    k.msleep(500)
+    #move_servo_slowly(ARM_PORT, 875, 5) 875 should be 792
+    #move_servo(ARM_PORT, 875)
+    k.msleep(200)
+    ao()
+	#move_servo_slowly(ARM_PORT, 790, 5)
+    k.msleep(200)
     move_servo(CLAW_PORT, CLAW_OPEN)
+    k.msleep(300)
+    """drive(150, 150)
+    k.msleep(300)"""
+    ao()
     
 
 
@@ -251,6 +267,5 @@ if __name__ == "__main__":
 	k.enable_servos()
 	start = k.seconds()
 	third_pipe()
-
 	print(k.seconds() - start)
 	cleanup()
