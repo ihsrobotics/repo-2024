@@ -172,9 +172,22 @@ def get_upper_noodle():
 	move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
 	get_top_noodle()
 def get_middle_noodle():
-	pass
+	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE, 10)
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+	drive(-30,-30)
+	k.msleep(250)
+	k.create_stop()
+	drive(-35, -35)
+	move_servo_slowly(ARM_PORT, ARM_ON_NOODLE_PIPE, 10)
+
+	k.create_stop()
 def get_lower_noodle():
-	pass
+	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE, 10)
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+	drive(-30,-30)
+	k.msleep(250)
+	k.create_stop()
+	drive(-35, -35)
 def get_bottom_noodle():
 	pass
 def turn_to_line_right():
@@ -307,7 +320,7 @@ def grab_turn():
 	ihs_bindings.encoder_turn_degrees_v2(100,60)
 	#move_servo(ROD_PORT, ROD_LINE)
 	
-	move_servo_slowly(ARM_PORT, ARM_DOWN,10)
+	#move_servo_slowly(ARM_PORT, ARM_DOWN,10)
 
 	k.msleep(500)
 	#while k.analog(5) < ROD_TOPHAT_BLACK:
@@ -318,12 +331,25 @@ def grab_turn():
 	move_servo(ROD_PORT,ROD_LINE)
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	k.msleep(100)
+	#turn until aligned with the pipe
+	drive(30,-30)
+	while (k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK):
+		continue
+	"""
+	drive(-30, 30)
+	while (k.analog(ROD_TOPHAT) > ROD_TOPHAT_BLACK):
+		continue
+	"""
+	#back up until reaching the line
+	#used for alignment
+	drive(30, 30)
+	while (k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK):
+		continue
+	drive(0, 0)
+	move_servo_slowly(ARM_PORT,ARM_UPPER_NOODLE,10)
 
-	while (k.analog(ARM_TOPHAT_PORT)<ARM_TOPHAT_BLACK or k.analog(ROD_TOPHAT)<ROD_TOPHAT_BLACK):
-		drive(30,-30)
-	print("EXIT")
-	drive(0,0)
-
+	#drive(-10,-10)
+	#k.msleep(100)
 
 	#k.msleep(100)
 	#move_servo(ARM_PORT, ARM_UPPER_NOODLE)
@@ -333,8 +359,8 @@ def grab_turn():
 	#get_upper_noodle()
 	
 
-#chew_claw(5)
-#get_top_noodle()
+chew_claw(5)
+get_top_noodle()
 #while (k.analog(ARM_TOPHAT_PORT) < ARM_TOPHAT_BLACK):
 	#drive(50, -50)
 #drive(0, 0)
@@ -345,7 +371,12 @@ def grab_turn():
 		#drive(-60, -30)
 	#if (k.analog(ARM_TOPHAT_PORT) < ARM_TOPHAT_BLACK):
 		#drive(-30, -60)
-#grab_turn()
+grab_turn()
+drive(-100, -100)
+k.msleep(1200)
+drive(0, 0)
+chew_claw(5)
+get_upper_noodle()
 #drive(-20,-20)
 #k.msleep(500)
 """
@@ -355,6 +386,7 @@ while k.analog(5) < SENSOR_BLACK:
 while k.analog(5) > SENSOR_BLACK:
 	drive(60, -60)
 """
-chew_claw(5)
-get_upper_noodle()
+#chew_claw(5)
+#get_middle_noodle()
+#get_upper_noodle()
 cleanup()
