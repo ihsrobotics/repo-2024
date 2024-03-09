@@ -11,10 +11,9 @@ k.set_servo_position(JANNIS, 0)
 
 def go_to_lava():
         k.set_servo_position(BOOM_ARM, 1940)
-        start = k.seconds()
         #Go To Lava Tube Area
         #MAKE SURE THIS IS 2500 MS
-        
+        start = k.seconds()
         while k.seconds() < start+2500:
                 line_follow(1200, 1500, "RIGHT")
         
@@ -28,29 +27,26 @@ def go_to_lava():
 
         #Move Slightly Backward
         drive(-500, -500)
-        k.msleep(235)
+        k.msleep(300)
         brake()
 
         #Adjust Angle
         while k.analog(FRONT_TOPHAT) < BLACK:
-                drive(0, 400)
+                drive(0, 300)
                 k.msleep(10)
- 
-        '''
-        while k.analog(BACK_TOPHAT) < BLACK:
-                drive(500, 0)
-                k.msleep(10)
-        '''
+
         brake()
+        
         drive(0, 100)
-        k.msleep(300)
+        k.msleep(250)
         brake() 
+        
 
 def peck():
         #Lowering Arm Into Tube
         lower_arm()
-#       k.mav(ARM, 800)
-#       k.msleep(50)
+        start = k.seconds()
+        vibrate(2000)
         stop_motor(ARM)
         #Pecking
         for i in range(7):
@@ -70,9 +66,10 @@ def peck():
                 k.mav(CLAW, 1500)
                 k.msleep(700)
                 stop_motor(ARM)
+                
 
 def align_with_second_pipe():
-        k.set_servo_position(BOOM_ARM, 1700)
+        k.set_servo_position(BOOM_ARM, 1715)
         button_square_up(500)
         start = k.seconds()
         while k.seconds() < start + 2600:
@@ -88,21 +85,6 @@ def align_with_second_pipe():
                 print("TOPHAT", k.analog(BOOM_TOPHAT))
         brake()
 
-
-#POMS
-raise_arm()
-go_to_lava()
-peck()
-stop_motor(CLAW)
-raise_arm()
-align_with_second_pipe()
-peck()
-
-
-#while True:
-#        k.mav(CLAW, 1500)
-
-
 #Tasks
 #1) Deploy Arm (FELIX) (DONE?)
 #2) Get Astronauts (BRANDON)
@@ -113,7 +95,16 @@ peck()
 #7) Deliver Poms In Point Scoring Areas (FELIX) (probably airlock)
 
 def main():
-    print("hello world!")
+        #POMS
+        raise_arm()
+        k.msleep(500)
+        go_to_lava()
+        peck()
+        stop_motor(CLAW)
+        raise_arm()
+        d_pipe()
+        peck()
+        stop_motor(CLAW)
 '''
 if __name__ == "__main__":
     main()
