@@ -206,19 +206,21 @@ def third_pipe():
     move_servo_slowly(ARM_PORT, 792, 10)
     turn_180(True)
     drive(-75, -75)
-    k.msleep(1000)
+    k.msleep(50)
     ao()
     #move_servo_slowly(ARM_PORT, 875, 5) 875 should be 792
     #move_servo(ARM_PORT, 875)
-    k.msleep(200)
-    ao()
+    #k.msleep(200)
+    #ao()
 	#move_servo_slowly(ARM_PORT, 790, 5)
-    k.msleep(200)
+    #ihs_bindings.encoder_turn_degrees_v2(15, -1)
+    k.msleep(500)
     move_servo(CLAW_PORT, CLAW_OPEN)
     k.msleep(300)
     """drive(150, 150)
     k.msleep(300)"""
     ao()
+
     
 
 
@@ -266,6 +268,10 @@ if __name__ == "__main__":
 	retry_connect(5)
 	k.enable_servos()
 	start = k.seconds()
+	#move_servo_slowly(ARM_PORT, 820)
+	#while True:
+	#	drive(150, 150)
 	third_pipe()
+	#turn_180()
 	print(k.seconds() - start)
 	cleanup()
