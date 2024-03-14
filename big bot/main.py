@@ -5,6 +5,7 @@ k = CDLL(kipr)
 import ihs_bindings
 import sys
 import math
+import time
 
 sys.path.append("/home/pi/Documents/IME_files/grabNoodle/include")
 from sensorshortcuts import *
@@ -27,7 +28,10 @@ def retry_connect(n):
 		if success:
 			print("Connected ^w^")
 			return True
-	return False
+	print("Failed to connect!!!")
+	print("Check if roomba is on")
+	print("Also, check the cable connecting the controller to the roomba.")
+	sys.exit(-1)
 def cleanup():
 	k.create_disconnect()
 	k.disable_servos()
@@ -50,8 +54,7 @@ def move_servo_slowly(port, end_position, delay=0):
         position = k.get_servo_position(port)-5
         k.set_servo_position(port, position)
         k.msleep(delay)
-    k.set_servo_position(port, end_position)
-
+    k.set_servo_position(port, end_position); k.msleep(100)
 
 # instantly moves servo
 # enables servo before moving servo
@@ -114,9 +117,11 @@ def test_drag():
 	k.msleep(10000)
 	k.create_disconnect()
 def print_battery_info():
-	print("Capacity", k.get_create_battery_capacity())
-	print("Charge", k.get_create_battery_charge())
-	print("Percentage", k.get_create_battery_charge() / k.get_create_battery_capacity() * 100)
+	charge = k.get_create_battery_charge()
+	capacity = k.get_create_battery_capacity()
+	print("Capacity", capacity)
+	print("Charge", charge)
+	print("Percentage", charge / (capacity if capacity != 0 else charge) * 100)
 
 def place_noodle_on_rack():
 	retry_connect(5)
@@ -163,33 +168,50 @@ def get_top_noodle():
 def get_upper_noodle():
 
 	move_servo_slowly(ARM_PORT, ARM_UPPER_NOODLE, 5)
-	k.msleep(1000)
-	drive(-50,-50)
-	k.msleep(200)
-	drive(0,0)
+
 	move_servo(CLAW_PORT, CLAW_CLOSED)
+	drive(-45,-45)
 	#drive(-10, -10)
 	move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
+	drive(0, 0)
 	get_top_noodle()
+
 def get_middle_noodle():
-	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE, 10)
+
+	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE, 5)
+
 	move_servo(CLAW_PORT, CLAW_CLOSED)
-	drive(-30,-30)
-	k.msleep(250)
+	drive(-15,-15)# -45
+	#drive(-10, -10)
+	move_servo_slowly(ARM_PORT, ARM_UPPER_NOODLE, 5)
+	drive(0, 0)
+	get_upper_noodle()
+
 	k.create_stop()
-	drive(-35, -35)
-	move_servo_slowly(ARM_PORT, ARM_ON_NOODLE_PIPE, 10)
+
 
 	k.create_stop()
 def get_lower_noodle():
-	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE, 10)
+	move_servo_slowly(ARM_PORT, ARM_UPPER_NOODLE, 5)
+	k.msleep(1000)
 	move_servo(CLAW_PORT, CLAW_CLOSED)
-	drive(-30,-30)
-	k.msleep(250)
-	k.create_stop()
-	drive(-35, -35)
+	drive(25,25)
+	#drive(-10, -10)
+	move_servo_slowly(ARM_PORT, ARM_TOP_NOODLE, 5)
+	drive(0, 0)
+	get_top_noodle()
 def get_bottom_noodle():
-	pass
+	
+	move_servo_slowly(ARM_PORT, ARM_LOWER_NOODLE, 5)
+
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+	drive(20,20)# -45
+	#drive(-10, -10)
+	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE, 5)
+	drive(0, 0)
+	get_middle_noodle()
+
+	k.create_stop()
 def turn_to_line_right():
 	#move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
 	k.msleep(500)
@@ -298,14 +320,16 @@ print_battery_info()
 
 
 def grab_turn():
-	ihs_bindings.encoder_turn_degrees_v2(100, 180)
+	ihs_bindings.encoder_turn_degrees_v2(300, 180)
 	#this is unfinished it has to put it on the rack
 	drive(-70,-70)
-	k.msleep(1500)
+	k.msleep(1400)
+
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	k.msleep(500)
-	
-	ihs_bindings.encoder_turn_degrees_v2(100,90)
+	drive(0,0)
+
+	ihs_bindings.encoder_turn_degrees_v2(300,90)
 	drive(-100,-100)
 	k.msleep(1000)
 	drive(0,0)
@@ -317,7 +341,7 @@ def grab_turn():
 	drive(100,100)
 	k.msleep(200)
 
-	ihs_bindings.encoder_turn_degrees_v2(100,60)
+	ihs_bindings.encoder_turn_degrees_v2(300,60)
 	#move_servo(ROD_PORT, ROD_LINE)
 	
 	#move_servo_slowly(ARM_PORT, ARM_DOWN,10)
@@ -330,8 +354,8 @@ def grab_turn():
 	#drive(0,0)
 	move_servo(ROD_PORT,ROD_LINE)
 	move_servo(CLAW_PORT, CLAW_OPEN)
-	k.msleep(100)
-	#turn until aligned with the pipe
+	k.msleep(500) # rod shakes slightly, so we need time to let it settle
+	#turn until aligned with the line
 	drive(30,-30)
 	while (k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK):
 		continue
@@ -342,12 +366,15 @@ def grab_turn():
 	"""
 	#back up until reaching the line
 	#used for alignment
+	drive(0, 0)
+	move_servo(ROD_TOPHAT, ROD_LINE - 50) # moves the rod off the line to detect other line
+	k.msleep(500)
 	drive(30, 30)
 	while (k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK):
 		continue
 	drive(0, 0)
-	move_servo_slowly(ARM_PORT,ARM_UPPER_NOODLE,10)
 
+	
 	#drive(-10,-10)
 	#k.msleep(100)
 
@@ -357,10 +384,30 @@ def grab_turn():
 	#drive(-100,-100)
 	#k.msleep(850)
 	#get_upper_noodle()
-	
+#k.enable_servos()
+#move_servo_slowly(ARM_PORT,ARM_MIDDLE_NOODLE,15)
+start_time = time.time()
+move_servo_slowly(CLAW_PORT,CLAW_OPEN,15)
+chew_claw(5)
+get_middle_noodle()
+grab_turn()
+move_servo_slowly(ARM_PORT,ARM_BOTTOM_NOODLE ,10)
+drive(-100,-100)
+k.msleep(900)
+drive(0,0)
+get_bottom_noodle()
+move_servo(ROD_PORT,ROD_SIDE)
+grab_turn()
+print(time.time()-start_time)
 
+#move_servo_slowly(CLAW_PORT, CLAW_OPEN,10)
+#move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE,10)
+
+'''
+i = k.seconds()
 chew_claw(5)
 get_top_noodle()
+
 #while (k.analog(ARM_TOPHAT_PORT) < ARM_TOPHAT_BLACK):
 	#drive(50, -50)
 #drive(0, 0)
@@ -371,21 +418,51 @@ get_top_noodle()
 		#drive(-60, -30)
 	#if (k.analog(ARM_TOPHAT_PORT) < ARM_TOPHAT_BLACK):
 		#drive(-30, -60)
+
 grab_turn()
+move_servo_slowly(ARM_PORT,ARM_UPPER_NOODLE,10)
 drive(-100, -100)
-k.msleep(1200)
-drive(0, 0)
+k.msleep(900)
+drive(0, 0)	
 chew_claw(5)
+#move_servo_slowly(ARM_PORT,ARM_ON_NOODLE_PIPE,10)
 get_upper_noodle()
+move_servo(ROD_PORT,ROD_SIDE)
+grab_turn()
+move_servo_slowly(ARM_PORT,ARM_MIDDLE_NOODLE,10)
+drive(-100,-100)
+k.msleep(600)
+drive(0,0)
+chew_claw(5)
+get_middle_noodle()
+move_servo(ROD_PORT,ROD_SIDE)
+grab_turn()
+move_servo_slowly(ARM_PORT,ARM_LOWER_NOODLE,10)
+drive(-100,-100)
+k.msleep(800)
+drive(0,0)
+get_lower_noodle()
+print((k.seconds()-i)/1000)
+'''
+'''
+line follow
+i = k.seconds()
+while(i-k.seconds()<1100):
+	if k.analog(PLACEHOLDER)<BLACK:
+		drive(-10,-5)
+	if k.analog(PLACEHOLDER)>BLACK:
+		drive(-5,-10)
+'''
+
+#move_servo_slowly(ARM_PORT,ARM_STRAIGHT_UP,10)
+
+#move_servo_slowly(ARM_PORT,ARM_ON_NOODLE_PIPE,10)
+
 #drive(-20,-20)
 #k.msleep(500)
-"""
-while k.analog(5) < SENSOR_BLACK:
-	drive(60, -60)
 
-while k.analog(5) > SENSOR_BLACK:
-	drive(60, -60)
-"""
+
+
 #chew_claw(5)
 #get_middle_noodle()
 #get_upper_noodle()
