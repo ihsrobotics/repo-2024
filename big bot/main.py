@@ -39,6 +39,7 @@ def cleanup():
 # the servo is disabled after calling the function
 # to protect microservoes
 def move_servo_slowly(port, end_position, delay=0):
+	k.enable_servo(port)
     position = k.get_servo_position(port)
     if end_position == position:
         return
@@ -66,13 +67,20 @@ def move_servo(port, end_position):
 	k.disable_servo(port)
 
 # chews the claw by opening and closing it
+# also vibrates arm up and down
 # helps grab the noodle better
 def chew_claw(count):
+	arm_position = k.get_servo_position(ARM_PORT)
 	for i in range(count, 0, -1):
+		if i % 2 == 0:
+			move_servo(ARM_PORT, arm_position + 20)
+		else:
+			move_servo(ARM_PORT, arm_position - 20)
 		move_servo(CLAW_PORT, int(CLAW_CLOSED + (CLAW_OPEN - CLAW_CLOSED) * i/count))
 		k.msleep(1)
 		move_servo(CLAW_PORT,CLAW_CLOSED)
 		k.msleep(1)
+	move_servo(ARM_PORT, arm_position)
 #square up
 def drive_to_line(left_speed, right_speed, left_sensor=left_front, right_sensor=right_front):
 	print (left_sensor(), right_sensor())
@@ -205,7 +213,7 @@ def get_bottom_noodle():
 	move_servo_slowly(ARM_PORT, ARM_LOWER_NOODLE, 5)
 
 	move_servo(CLAW_PORT, CLAW_CLOSED)
-	drive(20,20)# -45
+	drive(30,30)# -45
 	#drive(-10, -10)
 	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE, 5)
 	drive(0, 0)
@@ -341,7 +349,7 @@ def grab_turn():
 	drive(100,100)
 	k.msleep(200)
 
-	ihs_bindings.encoder_turn_degrees_v2(300,60)
+	ihs_bindings.encoder_turn_degrees_v2(300,80)
 	#move_servo(ROD_PORT, ROD_LINE)
 	
 	#move_servo_slowly(ARM_PORT, ARM_DOWN,10)
@@ -356,24 +364,20 @@ def grab_turn():
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	k.msleep(500) # rod shakes slightly, so we need time to let it settle
 	#turn until aligned with the line
-	drive(30,-30)
+	drive(20,-20)
 	while (k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK):
 		continue
-	"""
-	drive(-30, 30)
-	while (k.analog(ROD_TOPHAT) > ROD_TOPHAT_BLACK):
-		continue
-	"""
 	#back up until reaching the line
 	#used for alignment
 	drive(0, 0)
+	"""
 	move_servo(ROD_TOPHAT, ROD_LINE - 50) # moves the rod off the line to detect other line
 	k.msleep(500)
 	drive(30, 30)
 	while (k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK):
 		continue
 	drive(0, 0)
-
+	"""
 	
 	#drive(-10,-10)
 	#k.msleep(100)
@@ -388,12 +392,17 @@ def grab_turn():
 #move_servo_slowly(ARM_PORT,ARM_MIDDLE_NOODLE,15)
 start_time = time.time()
 move_servo_slowly(CLAW_PORT,CLAW_OPEN,15)
-chew_claw(5)
+#drives in to get better grip on noodle
+drive(-20, -20)
+k.msleep(300)
+drive(0, 0)
+chew_claw(10)
+
 get_middle_noodle()
 grab_turn()
 move_servo_slowly(ARM_PORT,ARM_BOTTOM_NOODLE ,10)
 drive(-100,-100)
-k.msleep(900)
+k.msleep(800)
 drive(0,0)
 get_bottom_noodle()
 move_servo(ROD_PORT,ROD_SIDE)
