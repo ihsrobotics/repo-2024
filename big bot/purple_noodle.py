@@ -27,9 +27,12 @@ def retry_connect(n):
 def print_battery_info():
 	charge = k.get_create_battery_charge()
 	capacity = k.get_create_battery_capacity()
+	if (capacity == 0 or charge == 0 or charge > capacity):
+		print("Battery info is invalid, try again later")
+		return
 	print("Capacity", capacity)
 	print("Charge", charge)
-	print("Percentage", charge / (capacity if capacity != 0 else charge) * 100)
+	print("Percentage", charge / (capacity if capacity != 0 else 1) * 100)
 
 def drive_to_line(left_speed, right_speed, left_sensor=left_front, right_sensor=right_front):
 	print (left_sensor(), right_sensor())
@@ -81,6 +84,15 @@ def move_servo_slowly(port, end_position, delay=0):
 def go_to_switch():
     ihs_bindings.encoder_turn_degrees_v2(100, 180)
     
+def line_follow(SENSOR):
+	print(k.analog(ROD_PORT))
+	while k.analog(ROD_PORT) <= ROD_TOPHAT_BLACK:
+		print(k.analog(ROD_PORT))
+		if k.analog(SENSOR) <= SWEEPER_BLACK:
+			drive(-150, -50)
+		elif k.analog(SENSOR) >= SWEEPER_BLACK:
+			drive(-50,-150)
+
 def main():
 	success = retry_connect(5) ## connects to but, tries 5 times
 	if not success:
@@ -92,12 +104,14 @@ def main():
 	#line up arm with free-standing structure with middle rods
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT, 5) 
 	k.msleep(200)
+	print("servo should've moved")
 	drive(-100, -100)
 	k.msleep(500)
 	drive(0, 0)
-	move_servo_slowly(ROD_PORT, ROD_LEFT_SIDE, 5)
+	#move_servo_slowly(ROD_PORT, ROD_LEFT_SIDE, 5)
 	ihs_bindings.encoder_turn_degrees_v2(100,-45)
 	drive_to_line(200, 200, left_side, right_side)
+	drive_to_line_white(150, 150, left_side, right_side)
 	k.msleep(100)
 
 
@@ -116,7 +130,36 @@ def main():
 
 	ihs_bindings.encoder_turn_degrees_v2(100,90)
 	drive_to_line(150, 150, left_side, right_side)
+	k.msleep(100)
+	drive_to_line_white(150,150, left_side, right_side)
+	drive(0,0)
+	
+	move_servo_slowly(ROD_PORT,ROD_STRAIGHT,5)
+	ihs_bindings.encoder_turn_degrees_v2(100,110)
+	k.msleep(300)
+	
+	drive(-30,30)
+	while k.analog(ROD_TOPHAT)<= ROD_TOPHAT_BLACK:
+		print(k.analog(ROD_TOPHAT))
+		pass
+	drive(0,0)
+	k.msleep(3000)
+	move_servo_slowly(ROD_PORT,ROD_SIDE,5)
+	line_follow(SWEEPER_TOPHAT_PORT)
 	
 
 
-main()
+
+
+
+    
+	
+
+	
+	
+
+retry_connect(5)
+line_follow(SWEEPER_TOPHAT_PORT)
+#drive_to_line_white(150,150, left_side, right_side)
+k.enable_servos()
+#main()
