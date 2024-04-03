@@ -1,58 +1,66 @@
 import sys
-from ctypes import CDLL
 sys.path.append("/home/pi/Documents/IME_files/lava_tube_poms/include")
 from bot_functions import *
 from config_loader import *
-kipr = "/usr/local/lib/libkipr.so"
-k = CDLL(kipr)
 
 
-def back_into_jannis():
-    while k.analog(FRONT_TOPHAT) < BLACK:
-        drive(-500, -500)
-    brake()
-    start = k.seconds()
-    while k.seconds() < start + 4500:
-        line_follow(500, 700, "RIGHT", BOOM_BLACK, BOOM_TOPHAT)
-    brake()
 
 def main():
-    raise_arm()
-    #Aligning with wall
-    button_square_up(500)
 
-    #Turn into area
-    turn_90("LEFT")
-    print("TURN FINISHED")
-    brake() 
-    k.msleep(300)
-
-    #Get boom tophat off of black
-    while k.analog(BOOM_TOPHAT) > BOOM_BLACK:
-        drive(500, -500)
-        k.msleep(10)
-        print(f"BOOM: {k.analog(BOOM_TOPHAT)}/{BOOM_BLACK}")
+    #Turn until front tophat hits black
+    while k.analog(FRONT_TOPHAT) < BLACK:
+        drive(200, 1200)
     brake()
-    start = k.seconds()
-    while k.seconds() < start + 1000:
+
+    #Move boom arm into box
+    arm_position = k.get_servo_position(BOOM_ARM)
+    while k.analog(BOOM_TOPHAT) < BLACK:
+        print(f"GETTING ARM TO HIT BLACK: {k.analog(BOOM_TOPHAT)}/{BOOM_BLACK}")
+        k.set_servo_position(BOOM_ARM, arm_position)
+        arm_position -= 1
+    while k.analog(BOOM_TOPHAT) > BLACK:
+        print(f"GETTING ARM TO HIT WHITE: {k.analog(BOOM_TOPHAT)}/{BOOM_BLACK}")
+        k.set_servo_position(BOOM_ARM, arm_position)
+        arm_position -= 1
+
+    #Line follow with boom arm and gradually swing it out
+    while k.get_servo_position(BOOM_ARM) < 2047:
         line_follow(500, 700, "RIGHT", BOOM_BLACK, BOOM_TOPHAT)
-    brake()
+        k.set_servo_position(BOOM_ARM, arm_position)
+        arm_position += 1
+        k.msleep(2)
+
+    #Line follow for slightly longer to even out
+    start = k.seconds()
+    while k.seconds() < start + 3500:
+        line_follow(300, 700, "RIGHT", BOOM_BLACK, BOOM_TOPHAT)
+    
+    
 
     #Back up onto tape
     while k.analog(FRONT_TOPHAT) < BLACK:
-        drive(-500, -500)
+        print(f"{k.analog(FRONT_TOPHAT)} < {BLACK}")
+
+        #OG: -550, -500
+        #Left wheel is slightly faster in order to get the bot closer to the wall
+        drive(-550, -500)
     brake()
-    k.msleep(300)
+    
+
+    #Get boom off of black
+    drive(500, -500)
+    k.msleep(200)
+    brake()
 
     #Line follow for duration
     start = k.seconds()
-    while k.seconds() < start + 2650:
-        line_follow(450, 500, "RIGHT", BOOM_BLACK, BOOM_TOPHAT)
+    while k.seconds() < start + 2825:
+        line_follow(400, 500, "RIGHT", BOOM_BLACK, BOOM_TOPHAT)
     brake()
-    
+
     #Turn slightly
-    drive(0, -500)
-    k.msleep(200)
+    drive(0, -100)
+    k.msleep(1025)
     brake()
 
     #Lower arm so that the aussie barely touches the pipe
@@ -84,13 +92,15 @@ def main():
     drive(-500, -500)
     k.msleep(1000)
     brake()
-
     raise_arm()
-    back_into_jannis()
+
 
 if __name__ == "__main__":
         k.enable_servos()
-        k.set_servo_position(BOOM_ARM, 2047)
+        k.set_servo_position(BOOM_ARM, 1650)
+        raise_arm()
         k.set_servo_position(JANNIS, LOWER_JANNIS)
+        k.set_servo_position(LEVER_SERVO, 2047)
+        
 
 main()
