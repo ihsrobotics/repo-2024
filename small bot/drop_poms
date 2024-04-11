@@ -1,0 +1,33 @@
+import sys
+sys.path.append("/home/pi/Documents/IME_files/Small_bot_4174/include")
+from bot_functions import *
+from config_loader import *
+
+def drive_to_drawer():
+
+    k.set_servo_position(BOOM_SERVO, BOOM_LEFT_POS)
+    k.msleep(500)
+
+    while not on_tape(BOOM_TOPHAT, BOOM_BLACK):
+        line_follow(1100, 1500, "LEFT", FRONT_TOPHAT, FRONT_BLACK)
+    brake()
+
+def turn_to_drawer():
+    k.set_servo_position(BOOM_SERVO, 700)
+    k.msleep(500)
+
+    while not on_tape(BOOM_TOPHAT, BOOM_BLACK):
+        drive(1000, -1000)
+    brake()
+
+def spit_poms():
+    k.mav(CLAW, -1500)
+    k.msleep(2000)
+
+if __name__ == "__main__":
+    k.enable_servos()
+
+    drive_to_drawer()
+    turn_to_drawer()
+
+    k.disable_servos()
