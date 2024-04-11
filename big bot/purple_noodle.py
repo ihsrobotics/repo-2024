@@ -73,7 +73,7 @@ def main():
 		return -1
 	start_charge = k.get_create_battery_charge()
 	#line up arm with free-standing structure with middle rods
-	move_servo_slowly(ARM_PORT, ARM_STRAIGHT, 3) 
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 3) 
 	k.msleep(200)
 	
 	drive(-100, -100)
@@ -93,18 +93,84 @@ def main():
 	#go to middle line
 	#ihs_bindings.encoder_turn_degrees_v2(100, -5)
 
-	drive_to_line(300, 300, left_side, right_side)
+	drive_to_line(250, 250, left_side, right_side)
 	drive(300,300)
 	k.msleep(100)
 	
 	ihs_bindings.encoder_turn_degrees_v2(500,90)
-	sweep()
+	#sweep()
 	drive_to_line(300, 300, left_side, right_side)
 	align_start = time.time()
 	drive_to_line_white(150,150, left_side, right_side)
 	drive(0,0)
-	print(time.time() - align_start)
+
+	#drives towards cubes
+	ihs_bindings.encoder_turn_degrees_v2(100, 90)
 	
+	#drive towards tower
+	sweeper_align_black(30, -30)
+	move_servo(ROD_PORT, 1800) #position rod so line follow is precise, og: 1285
+	
+	def is_rod_black():
+		return k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK
+	line_follow(SWEEPER_TOPHAT_PORT, is_rod_black)
+	
+	#does the same thing as the line
+	
+
+	line_follow(SWEEPER_TOPHAT_PORT, lambda : k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK)
+	'''
+	#pick up cubes
+	drive(100,100)
+	k.msleep(250)
+
+	move_servo_slowly(ARM_PORT,ARM_SHELF)
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+	k.msleep(500)
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
+	#drops off cubes
+	ihs_bindings.encoder_turn_degrees_v2(500, -135)
+	move_servo(CLAW_PORT, CLAW_OPEN)
+	ihs_bindings.encoder_turn_degrees_v2(500, 130)
+	drive(-100,-100)
+	k.msleep(250)
+	print("done")
+	'''
+
+	#turn towards drawer
+	ihs_bindings.encoder_turn_degrees_v2(500, -33)
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+
+	move_servo_slowly(ARM_PORT, ARM_DOWN-20, 5)
+
+	move_servo(CLAW_PORT, CLAW_DRAWER)
+	drive(100,100)
+	while right_side() < BLACK:
+		pass
+	k.msleep(155)
+	drive(0, 0)
+	k.msleep(1000)
+	ihs_bindings.encoder_turn_degrees_v2(100,-7)
+	drive(-100,-100)
+	k.msleep(100)
+	drive(0,0)
+	k.msleep(1000)
+	move_servo_slowly(CLAW_PORT, CLAW_DRAWER + 15)
+	ihs_bindings.encoder_turn_degrees_v2(100, -13)
+	"""
+	#pick up cubes
+
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+	k.msleep(500)
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
+	#drops off cubes
+	ihs_bindings.encoder_turn_degrees_v2(500, -135)
+	move_servo(CLAW_PORT, CLAW_OPEN)
+	ihs_bindings.encoder_turn_degrees_v2(500, 130)
+	"""
+	#drive(-500,-500)
+	"""	
+	#DO NOT DELETE
 	#move_servo(ROD_PORT,ROD_STRAIGHT)
 	ihs_bindings.encoder_turn_degrees_v2(500,80)
 	k.msleep(100)
@@ -114,13 +180,9 @@ def main():
 	sweep()
 	move_servo(ROD_PORT, ROD_SIDE)
 	move_servo_slowly(ARM_PORT, ARM_DOWN, 3)
+
 	#drives to switch
 	line_follow(SWEEPER_TOPHAT_PORT, is_right_front_white)
-	"""
-	drive(-300, -300)
-	while is_right_front_white():
-		pass
-    """
 	drive(0, 0)
 	#one more alignment for good measure
 	move_servo(ROD_PORT,ROD_STRAIGHT)
@@ -191,6 +253,7 @@ def main():
 		pass
 	drive(0, 0)
 	sweep()
+	"""
 	print("Time:", time.time() - start_time)
 	print("Roomba Battery Used", str((k.get_create_battery_charge() - start_charge)/k.get_create_battery_capacity() * 100) + "%")
 	#move_servo_slowly(ARM_PORT, ARM_LAVA_RESET, 5)
