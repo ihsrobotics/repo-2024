@@ -63,10 +63,10 @@ def sweep():
 	k.mav(SWEEPER_PORT, 0)
 def main():
 	"""
-	success = retry_connect(5) ## connects to but, tries 5 times
-	if not success:
-		print("Failed to connect!!!")
-		return -1
+	while right_side() > BLACK:
+		drive(-200,-200)
+		print(right_side())
+	drive(0,0)
 	"""
 	if not print_battery_info():
 		print("invalid battery info probably means bot will do something dumb")
@@ -111,37 +111,48 @@ def main():
 	sweeper_align_black(30, -30)
 	move_servo(ROD_PORT, 1800) #position rod so line follow is precise, og: 1285
 	
+	"""
 	def is_rod_black():
 		return k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK
 	line_follow(SWEEPER_TOPHAT_PORT, is_rod_black)
-	
+	"""
 	#does the same thing as the line
 	
 
-	line_follow(SWEEPER_TOPHAT_PORT, lambda : k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK)
-	'''
-	#pick up cubes
+	#line_follow(SWEEPER_TOPHAT_PORT, lambda : right_side() < BLACK)
+	drive(-200,-200)
+	while right_side() > BLACK:
+		pass
+	drive(0,0)
+    #pick up cubes
 	drive(100,100)
-	k.msleep(250)
-
+	k.msleep(100)
+	drive(0,0)
 	move_servo_slowly(ARM_PORT,ARM_SHELF)
-	move_servo(CLAW_PORT, CLAW_CLOSED)
+	move_servo_slowly(CLAW_PORT, CLAW_CLOSED, 5)
 	k.msleep(500)
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
+	
 	#drops off cubes
 	ihs_bindings.encoder_turn_degrees_v2(500, -135)
+	move_servo_slowly(ARM_PORT, ARM_DOWN,5)
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	ihs_bindings.encoder_turn_degrees_v2(500, 130)
-	drive(-100,-100)
-	k.msleep(250)
+	#drive(-100,-100)
+	#k.msleep(250)
 	print("done")
-	'''
+	
 
 	#turn towards drawer
+	'''
 	ihs_bindings.encoder_turn_degrees_v2(500, -33)
+    
 	move_servo(CLAW_PORT, CLAW_CLOSED)
 
 	move_servo_slowly(ARM_PORT, ARM_DOWN-20, 5)
+
+	k.msleep(500)
+
 
 	move_servo(CLAW_PORT, CLAW_DRAWER)
 	drive(100,100)
@@ -149,14 +160,23 @@ def main():
 		pass
 	k.msleep(155)
 	drive(0, 0)
+	
+	ihs_bindings.encoder_turn_degrees_v2(100,-5)
+	ihs_bindings.encoder_turn_degrees_v2(100,3)
+	
+
 	k.msleep(1000)
+
 	ihs_bindings.encoder_turn_degrees_v2(100,-7)
 	drive(-100,-100)
-	k.msleep(100)
+	k.msleep(300)
 	drive(0,0)
+	
 	k.msleep(1000)
-	move_servo_slowly(CLAW_PORT, CLAW_DRAWER + 15)
-	ihs_bindings.encoder_turn_degrees_v2(100, -13)
+
+	move_servo_slowly(CLAW_PORT, CLAW_DRAWER + 10)
+	ihs_bindings.encoder_turn_degrees_v2(100, -14)
+	'''
 	"""
 	#pick up cubes
 
@@ -257,6 +277,7 @@ def main():
 	print("Time:", time.time() - start_time)
 	print("Roomba Battery Used", str((k.get_create_battery_charge() - start_charge)/k.get_create_battery_capacity() * 100) + "%")
 	#move_servo_slowly(ARM_PORT, ARM_LAVA_RESET, 5)
+	
 
 if __name__ == "__main__":
 	retry_connect(5)
@@ -272,4 +293,6 @@ if __name__ == "__main__":
 	#drive(0,0)
 	#drive_to_line_white(150,150, left_side, right_side)
 	main()
+
+
 	#ihs_bindings.encoder_turn_degrees_v2(100,180)
