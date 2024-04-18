@@ -101,7 +101,6 @@ def main():
 	ihs_bindings.encoder_turn_degrees_v2(500,90)
 	#sweep()
 	drive_to_line(300, 300, left_side, right_side)
-	align_start = time()
 	drive_to_line_white(150,150, left_side, right_side)
 	drive(0,0)
 
@@ -111,7 +110,7 @@ def main():
 	#drive towards tower
 	sweeper_align_black(30, -30)
 	move_servo(ROD_PORT, 1800) #position rod so line follow is precise, og: 1285
-	
+	k.msleep(500) # wait for rod to settle down
 	
 	def is_rod_black():
 		return k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK
@@ -162,9 +161,9 @@ def main():
 	
 	ihs_bindings.encoder_turn_degrees_v2(500, -33)
 	
-	move_servo(CLAW_PORT, CLAW_CLOSED)
+	move_servo(CLAW_PORT, 100)
 
-	move_servo_slowly(ARM_PORT, ARM_DOWN-20, 5)
+	move_servo_slowly(ARM_PORT, ARM_DOWN - 20, 5)
 
 	k.msleep(500)
 
@@ -177,21 +176,34 @@ def main():
 	k.msleep(200)#0g: 170
 	drive(0, 0)
 	#re adjust
-	ihs_bindings.encoder_turn_degrees_v2(100,-3)
-	ihs_bindings.encoder_turn_degrees_v2(100,2)
+	ihs_bindings.encoder_turn_degrees_v2(100, 3)
+	ihs_bindings.encoder_turn_degrees_v2(100, -2)
 	
 
 	#k.msleep(1000)
-
-	ihs_bindings.encoder_turn_degrees_v2(50,-5)
-	drive(-100,-100)
-	k.msleep(300)
-	drive(0,0)
-	
+	ihs_bindings.encoder_turn_degrees_v2(50, -3)
+	drive(-25, -25)
+	k.msleep(100)
+	drive(0, 0)
 	#k.msleep(1000)
 	#re adjust
-	move_servo_slowly(CLAW_PORT, CLAW_DRAWER + 15)
-	ihs_bindings.encoder_turn_degrees_v2(50, -15)
+	move_servo(CLAW_PORT, CLAW_DRAWER + 15)
+	ihs_bindings.encoder_turn_degrees_v2(50, -10)
+	ihs_bindings.encoder_turn_degrees_v2(50, 2)
+	drive(50, 50)
+	k.msleep(100)
+	ihs_bindings.encoder_turn_degrees_v2(50, -10)
+	ihs_bindings.encoder_turn_degrees_v2(50, 2)
+	drive(50, 50)
+	k.msleep(100)
+	ihs_bindings.encoder_turn_degrees_v2(50, -5)
+	return
+	"""
+	drive(50, 50)
+	k.msleep(100)
+	drive(0, 0)
+	ihs_bindings.encoder_turn_degrees_v2(50, -10)
+	"""
 	#release drawer
 	drive(-200,-200)
 	k.msleep(350)
@@ -200,21 +212,22 @@ def main():
 	#ihs_bindings.encoder_turn_degrees_v2(100,45)
 	#drive back 
 	drive(500, 500)
-	k.msleep(850)
+	k.msleep(550)
 	ihs_bindings.encoder_turn_degrees_v2(200, -20)
 	# Drive to mid line 
 	drive_to_line(-100, -100, left_side, right_side)
-	align_start_time = time()
-	drive_to_line_white(-100, -100, left_side, right_side)
-    # Goes to middle of mid line
-	drive(100, 100)
-	k.msleep((time() - align_start_time) / 2)
+	drive(-500, -500)
+	k.msleep(300)
+	drive_to_line(100, 100, left_side, right_side)
+	drive_to_line_white(100, 100, left_side, right_side)
 	drive(0, 0)
 	move_servo_slowly(ARM_PORT, ARM_DOWN, 5)
 	move_servo_slowly(CLAW_PORT, CLAW_OPEN, 5)
 	ihs_bindings.encoder_turn_degrees_v2(200, 80)
 	sweeper_align_black(30, -30)
 	#drive to switch
+	drive(0, 0)
+	k.msleep(500)
 	line_follow(SWEEPER_TOPHAT_PORT, is_right_front_white)
 	drive(0, 0)
 	#flick up
@@ -259,8 +272,8 @@ def main():
 	ihs_bindings.encoder_turn_degrees_v2(500, 130)
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
 	line_follow(SWEEPER_TOPHAT_PORT, is_rod_black)
-	line_follow(SWEEPER_TOPHAT_PORT, is_rod_white)
-	print("done")
+	line_follow(SWEEPER_TOPHAT_PORT, is_rod_white)\
+	#print("done")
     
 	
 	'''
@@ -357,6 +370,7 @@ def main():
 if __name__ == "__main__":
 	retry_connect(5)
 	print_battery_info()
+	k.create_safe()
 	#line_follow(SWEEPER_TOPHAT_PORT)
 	#move_servo_slowly(ARM_PORT,ARM_DOWN)
 	k.enable_servos()
