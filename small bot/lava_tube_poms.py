@@ -1,13 +1,8 @@
 import sys
-from ctypes import CDLL
 sys.path.append("/home/pi/Documents/IME_files/lava_tube_poms/include")
 from bot_functions import *
 from config_loader import *
-kipr = "/usr/local/lib/libkipr.so"
-k = CDLL(kipr)
-k.enable_servos()
-k.set_servo_position(BOOM_ARM, 1940)
-k.set_servo_position(JANNIS, 0)
+
 
 def go_to_lava():
         k.set_servo_position(BOOM_ARM, 1940)
@@ -27,7 +22,8 @@ def go_to_lava():
 
         #Move Slightly Backward
         drive(-500, -500)
-        k.msleep(300)
+        #300
+        k.msleep(275)
         brake()
 
         #Adjust Angle
@@ -37,42 +33,66 @@ def go_to_lava():
 
         brake()
         
-        drive(0, 100)
-        k.msleep(250)
-        brake() 
+        # drive(0, 100)
+        # #250
+        # k.msleep(400)
+        # brake() 
         
 
 def peck():
-        #Lowering Arm Into Tube
-        lower_arm()
-        start = k.seconds()
-        vibrate(2000)
-        stop_motor(ARM)
-        #Pecking
+        k.mav(DRILL, 750)
+        move_arm("GROUND")
+
         for i in range(7):
                 #Suck Up Poms
-                k.mav(CLAW, 1500)
+                k.mav(DRILL, 750)
                 k.msleep(500)
-                brake()
+                
 
                 #Move Arm Up
-                k.mav(ARM, -800)
-                k.mav(CLAW, 1500)
-                k.msleep(700)
+                k.mav(ARM, -500)
+                k.mav(DRILL, 750)
+                k.msleep(270)
                 stop_motor(ARM)
 
                 #Move Arm Down
-                k.mav(ARM, 800)
-                k.mav(CLAW, 1500)
-                k.msleep(700)
+                k.mav(ARM, 500)
+                k.mav(DRILL, 750)
+                k.msleep(270)
                 stop_motor(ARM)
-                
+
+                k.msleep(500)
+
+def drill_tube():
+        #Drill Out Poms
+        k.mav(DRILL, 1500)
+        # k.msleep(12000)
+
+        #Lowering Arm Into Tube
+        move_arm("GROUND")
+        k.msleep(12000)
+        # start = k.seconds()
+
+        # #Wobble Drill Into Pipe
+        # while k.seconds() < start + 2000:
+        #         drive(100, -100)
+        #         k.msleep(500)
+        #         drive(-100, 100)
+        #         k.msleep(500)
+        # brake()
+        stop_motor(ARM)
+
+
+        
+
 
 def align_with_second_pipe():
-        k.set_servo_position(BOOM_ARM, 1715)
+        k.set_servo_position(BOOM_ARM, 1625)
         button_square_up(500)
         start = k.seconds()
-        while k.seconds() < start + 2600:
+
+        #2800
+        while k.seconds() < start + 2700:
                 line_follow(-500, -450, "RIGHT")
         brake()
         while k.analog(BOOM_TOPHAT) < BOOM_BLACK:
@@ -94,18 +114,31 @@ def align_with_second_pipe():
 #6) Suck Up Poms (FELIX) 
 #7) Deliver Poms In Point Scoring Areas (FELIX) (probably airlock)
 
+
+
 def main():
         #POMS
-        raise_arm()
+        move_arm("BOX")
         k.msleep(500)
         go_to_lava()
+        drill_tube()
+        stop_motor(DRILL)
+        move_arm("BOX")
+        align_with_second_pipe()
         peck()
-        stop_motor(CLAW)
-        raise_arm()
-        d_pipe()
-        peck()
-        stop_motor(CLAW)
-'''
+        stop_motor(DRILL)
+        move_arm("BOX")
+
 if __name__ == "__main__":
-    main()
-'''
+        k.enable_servos()
+        k.set_servo_position(BOOM_ARM, 1940)
+        k.set_servo_position(JANNIS, 2047)
+        k.set_servo_position(SWIPER, 0)
+
+main()
+
+#1. 3 (FAIL)
+#2. 4 (PASS)
+#3. 3 (FAIL)
+#4. 3 (FAIL)
+#5. 
