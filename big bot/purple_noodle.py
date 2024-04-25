@@ -177,17 +177,19 @@ def main():
 	drive(-100, -100)
 	k.msleep(1200)
 	drive(0, 0)
-
+	"""
 	ihs_bindings.encoder_turn_degrees_v2(30,-5)
 	ihs_bindings.encoder_turn_degrees_v2(30,5)
 
 	move_servo(CLAW_PORT, CLAW_DRAWER - 30)
 	ihs_bindings.encoder_turn_degrees_v2(50, 3)
-
+    """
 	#pull drawer out
 	move_servo(ROD_PORT,ROD_SIDE - 80)
 	k.msleep(500) #DO NOT DELETE necessary for rod align 
 	rod_align_black(-20, 20) #changed from 20
+	move_servo(ROD_PORT, 1900)
+	rod_align_white(-20, 20)
 	drive(20, -20)
 	k.msleep(100)
 	#ihs_bindings.encoder_turn_degrees_v2(20, -5) #possibly 9 try next run
@@ -201,12 +203,11 @@ def main():
 	drive(0, 0)
 	ihs_bindings.encoder_turn_degrees_v2(50, -10)
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 10)
-
+	ihs_bindings.encoder_turn_degrees_v2(50, 10)
 	#drive back 
 	drive(500, 500)
 	k.msleep(550)
 	ihs_bindings.encoder_turn_degrees_v2(200, -20)
-	return
 	#END OF DRAWER SEQUENCE
 
 	#START OF SWITCH SEQUENCE
