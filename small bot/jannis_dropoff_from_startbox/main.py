@@ -11,25 +11,16 @@ def setup():
 
 def drop_limbs():
 
+    k.set_servo_position(JANNIS_SERVO, 350)
+    k.msleep(100)
+
     print('bring arm in then out')
     while (k.analog(SLIDE) > 0):
         k.mav(ARM, 1000)
     stop_motor(ARM)
 
-
-    # while (k.analog(SLIDE) < 4000):
-    #     k.mav(ARM, -500)
-    # stop_motor(ARM)
-
-
-    # # for i in range(1, -1, -1):
-    while (k.analog(SLIDE) < 200):
-        k.mav(ARM, -500)
-        print(k.analog(SLIDE))
-    stop_motor(ARM)
-
-    while (k.analog(SLIDE) > 100):
-        k.mav(ARM, 1500)
+    k.mav(ARM, -500)
+    k.msleep(500)
     stop_motor(ARM)
 
 
@@ -53,16 +44,20 @@ def drive_to_dropoff():
         drive(1500, 1500)
     brake()
     while not on_tape(BOOM_TOPHAT, BOOM_BLACK):
-        drive(1500, 150)
+        drive(1500, 1500)
     brake()
 
-    # while not on_tape(BOOM_TOPHAT, BOOM_BLACK):
-    #     drive(1500, 1500)
-    # brake()
-    # while on_tape(BOOM_TOPHAT, BOOM_BLACK):
-    #     drive(1500, 1500)
-    # brake()
-    # drive(0, 1500, 300)
+    k.msleep(3000)
+
+    while on_tape(BOOM_TOPHAT, BOOM_BLACK):
+        drive(1500, 1500)
+    brake()
+
+    start = k.seconds() #prints negative
+
+    while k.seconds - start < 2:
+        line_follow(500, 1000, "RIGHT", BOOM_TOPHAT, BOOM_BLACK)
+    brake()
 
 
 def main():
@@ -80,5 +75,6 @@ def main():
 
 if __name__ == "__main__":
     k.enable_servos()
-    main()
+    # main()
+
     k.disable_servos()
