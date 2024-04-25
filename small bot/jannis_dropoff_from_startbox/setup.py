@@ -4,8 +4,8 @@ from bot_functions import *
 from config_loader import *
 
 def setup():
-    set_arm_pos(0)
-    k.set_servo_position(JANNIS_SERVO, 380)
+    set_arm_pos(650)
+    k.set_servo_position(JANNIS_SERVO, 350)
     k.msleep(100)
     k.set_servo_position(BOOM_SERVO, 1600)
     k.msleep(100)
