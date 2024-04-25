@@ -188,7 +188,7 @@ def main():
 	move_servo(ROD_PORT,ROD_SIDE - 80)
 	k.msleep(500) #DO NOT DELETE necessary for rod align 
 	rod_align_black(-20, 20) #changed from 20
-	move_servo(ROD_PORT, 1900)
+	move_servo(ROD_PORT, 1880) #lower value = less turn
 	rod_align_white(-20, 20)
 	drive(20, -20)
 	k.msleep(100)
@@ -246,34 +246,70 @@ def main():
 		pass
 	drive(0,0)
 	'''
-	drive(100,100)
-	k.msleep(150)
-
-
     
     #pick up cubes
 	drive(200,200)
-	k.msleep(100)
+	k.msleep(200)
 
 
 
 	drive(0,0)
 	#move_servo_slowly(ARM_PORT,ARM_SHELF-10,10)
 	k.msleep(100)
-	move_servo_slowly(CLAW_PORT, CLAW_CLOSED, 10)
+	move_servo_slowly(CLAW_PORT, CLAW_CLOSED)
 	k.msleep(500)
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
 	
 	#drops off cubes
 	ihs_bindings.encoder_turn_degrees_v2(500, -135)
-	move_servo_slowly(ARM_PORT, ARM_DOWN,5)
-	move_servo(CLAW_PORT, CLAW_OPEN)
-	ihs_bindings.encoder_turn_degrees_v2(500, 130)
+	move_servo_slowly(ARM_PORT,ARM_DOWN,5              )
+	move_servo(CLAW_PORT,CLAW_OPEN)
+	k.msleep(500)
+	move_servo_slowly(ARM_PORT,ARM_SHELF,5)
+	ihs_bindings.encoder_turn_degrees_v2(500,120)
+	sweeper_align_black(30,-30)
+	"""
+    #second grab attempt
+	line_follow(SWEEPER_TOPHAT_PORT, is_right_side_white)
+	drive(-100, -100)
+	k.msleep(200)
+	drive(0, 0)
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+	k.msleep(500)
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
-	line_follow(SWEEPER_TOPHAT_PORT, is_rod_black)
-	line_follow(SWEEPER_TOPHAT_PORT, is_rod_white)
-	#print("done")
-    
+	"""
+	move_servo_slowly(ARM_PORT, ARM_LAVA_RESET, 3)
+	move_servo(CLAW_PORT, CLAW_OPEN)
+	move_servo(ROD_PORT, ROD_STRAIGHT)
+	ihs_bindings.encoder_turn_degrees_v2(500,175)
+	drive(0, 0)
+	rod_align_black(50, -50)
+	rod_align_white(-50, 50)
+
+	move_servo(ROD_PORT, 1300) # moves sensor so we can detect the side line (original: 1370)
+	k.msleep(500) # give time for rod to settle down for more accurate sensor
+	rod_align_black(-100, -100)
+	drive(0, 0)
+	move_servo(ROD_PORT, ROD_SIDE)
+    #grab yannis
+	ihs_bindings.encoder_turn_degrees_v2(200, -5)
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+	drive(500, 500)
+	k.msleep(200)
+	ihs_bindings.encoder_turn_degrees_v2(200, 60)
+	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE)	
+	for i in range(2):
+		drive(50, 50)
+		k.msleep(200)
+		drive(-50, -50)
+		k.msleep(200)
+    # move roomba sensors off line to realign
+	drive(500, 500)
+	k.msleep(200)
+	drive_to_line(-150, -150, left_side, right_side)
+	drive(500, 500)
+	k.msleep(200)
+	drive(0, 0)
 	
 	'''
 	#DO NOT DELETE
@@ -291,7 +327,7 @@ def main():
 	line_follow(SWEEPER_TOPHAT_PORT, is_right_front_white)
 	drive(0, 0)
 	#one more alignment for good measure
-	move_servo(ROD_PORT,ROD_STRAIGHT)
+	move_servo(ROD_PORT, ROD_STRAIGHT)
 	k.msleep(500)
 	rod_align_black(-30, 30)
 	rod_align_white(30, -30)
