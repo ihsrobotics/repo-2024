@@ -64,6 +64,10 @@ def sweep():
 	k.mav(SWEEPER_PORT, 0)
 
 def old_main():
+	if not print_battery_info():
+		print("invalid battery info probably means bot will do something dumb")
+		return -1
+	start_charge = k.get_create_battery_charge()
 	drive(-200,-200)
 	
 	while right_side() > BLACK:
@@ -95,12 +99,12 @@ def old_main():
 	line_follow(SWEEPER_TOPHAT_PORT, is_rod_white)
 	print("done")
 
-def main():
+def purple_noodles_main():
 	if not print_battery_info():
 		print("invalid battery info probably means bot will do something dumb")
 		return -1
 	start_charge = k.get_create_battery_charge()
-	
+	drawer_time = time()
     #STARTING BOX MANUVEURS
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 3) 
 	k.msleep(200)
@@ -208,10 +212,12 @@ def main():
 	drive(500, 500)
 	k.msleep(550)
 	ihs_bindings.encoder_turn_degrees_v2(200, -20)
+	print ("DRAWER TIME:", time() - drawer_time)
 	#END OF DRAWER SEQUENCE
 
 	#START OF SWITCH SEQUENCE
 	# Drive to mid line 
+	switch_time = time()
 	drive_to_line(-100, -100, left_side, right_side)
 	drive(-500, -500)
 	k.msleep(300)
@@ -237,6 +243,7 @@ def main():
 	drive(300,300)
 	k.msleep(500)
 	move_servo_slowly(ARM_PORT, ARM_SHELF, 5)
+	print("SWITCH TIME:", switch_time - time())
 	#drives towards cubes
 	line_follow(SWEEPER_TOPHAT_PORT, is_right_side_white)
 	'''
@@ -248,6 +255,7 @@ def main():
 	'''
     
     #pick up cubes
+	cube_time = time()
 	drive(200,200)
 	k.msleep(200)
 
@@ -268,6 +276,7 @@ def main():
 	move_servo_slowly(ARM_PORT,ARM_SHELF,5)
 	ihs_bindings.encoder_turn_degrees_v2(500,120)
 	sweeper_align_black(30,-30)
+	print ("CUBE TIME:", cube_time - time())
 	"""
     #second grab attempt
 	line_follow(SWEEPER_TOPHAT_PORT, is_right_side_white)
@@ -278,6 +287,7 @@ def main():
 	k.msleep(500)
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
 	"""
+	purple_noodle_time = time()
 	move_servo_slowly(ARM_PORT, ARM_LAVA_RESET, 3)
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	move_servo(ROD_PORT, ROD_STRAIGHT)
@@ -310,6 +320,7 @@ def main():
 	drive(500, 500)
 	k.msleep(200)
 	drive(0, 0)
+	print ("PURPLE NOODLE TIME:", time() - purple_noodle_time)
 	
 	'''
 	#DO NOT DELETE
@@ -400,7 +411,85 @@ def main():
 	print("Time:", time() - start_time)
 	print("Roomba Battery Used", str((k.get_create_battery_charge() - start_charge)/k.get_create_battery_capacity() * 100) + "%")
 	#move_servo_slowly(ARM_PORT, ARM_LAVA_RESET, 5)
+
+def new_main():
+	if not print_battery_info():
+		print("invalid battery info probably means bot will do something dumb")
+		return -1
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 3) 
+	ihs_bindings.encoder_turn_degrees_v2(100, -45)
+	#move_servo_slowly(ROD_PORT, ROD_LEFT_SIDE, 5)
+	drive_to_line(250, 250, left_side, right_side)
+	drive_to_line_white(300, 300, left_side, right_side)
+
+	drive(-100, -100)
+	k.msleep(200)
+
+	drive(150, 150)
+	while k.analog(SWEEPER_PORT) < SWEEPER_BLACK:
+	    pass
+	drive(0, 0)
+
+	k.msleep(1000)
+	drive(250, 250)
+	while k.analog(SWEEPER_PORT) > SWEEPER_BLACK:
+	    pass
+	drive(0, 0)    
 	
+
+	ihs_bindings.encoder_turn_degrees_v2(100, 73)
+	drive_to_line(-250, -250, left_side, right_side)
+    #drive_to_line_white(-250, -250, left_side, right_side)
+	move_servo(ROD_PORT, ROD_ANGLED_DRAWER)
+
+    
+	k.msleep(800)
+	drive(50, -50)
+	while k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK:
+		pass
+	drive(0,0)
+	move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
+	move_servo(CLAW_PORT, CLAW_CLOSED+200)
+	
+
+	drive(-100,-100)
+	k.msleep(200)
+	drive(0, 0)
+
+	drive(-100, -100)
+	while left_side() < BLACK:
+		pass
+	drive(0,0)
+
+	k.msleep(200)
+
+	drive(-100, -100)
+	while left_side() > BLACK:
+		pass
+	drive(0,0)
+	drive(-100, -100)
+	k.msleep(400)
+	drive(0, 0)
+	k.msleep(1000)
+	move_servo_slowly(CLAW_PORT, CLAW_CLOSED, 5)
+	#ihs_bindings.encoder_turn_degrees_v2(100, -3)
+	drive(250, 250)
+	while left_side() < BLACK:
+		pass
+	drive(0,0)
+
+
+
+
+
+	
+    
+
+
+    
+
+
+
 
 if __name__ == "__main__":
 	retry_connect(5)
@@ -414,10 +503,12 @@ if __name__ == "__main__":
 		k.msleep(1000)
 		print(right_front())
 	"""
+
 	#drive(0,0)
 	#drive_to_line_white(150,150, left_side, right_side)
-	main()
-	
+	#purple_noodles_main()
+	#old_main()
+	new_main()
 
 
 	#ihs_bindings.encoder_turn_degrees_v2(100,180)
