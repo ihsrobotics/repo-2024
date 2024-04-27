@@ -157,7 +157,7 @@ def purple_noodles_main():
 	rod_align_black(-30, 30)
 	rod_align_white(30, -30)
 	move_servo(CLAW_PORT, 100)
-
+	
 	move_servo_slowly(ARM_PORT, ARM_DOWN, 5)
 
 	k.msleep(500)
@@ -420,76 +420,77 @@ def new_main():
 	ihs_bindings.encoder_turn_degrees_v2(100, -45)
 	#move_servo_slowly(ROD_PORT, ROD_LEFT_SIDE, 5)
 	drive_to_line(250, 250, left_side, right_side)
-	drive_to_line_white(300, 300, left_side, right_side)
+	drive_to_line_white(100, 100, left_side, right_side)
 
-	drive(-100, -100)
-	k.msleep(200)
-
-	drive(150, 150)
+	drive(200, 200)
+	"""
 	while k.analog(SWEEPER_PORT) < SWEEPER_BLACK:
 	    pass
+	"""
+	k.msleep(1100)
 	drive(0, 0)
-
-	k.msleep(1000)
-	drive(250, 250)
+	"""
+	l = time()
+	drive(150, 150)
 	while k.analog(SWEEPER_PORT) > SWEEPER_BLACK:
 	    pass
-	drive(0, 0)    
-	
+	drive(0, 0)   
+	print(time() - l) 
+	"""
+	#bulldoze rock out of the way
+	ihs_bindings.encoder_turn_degrees_v2(100, 40)
+	move_servo_slowly(ARM_PORT, ARM_DOWN, 5)
+	move_servo(CLAW_PORT, CLAW_STRAIGHT)
+	ihs_bindings.encoder_turn_degrees_v2(100, 50)
 
-	ihs_bindings.encoder_turn_degrees_v2(100, 73)
+	#sweep()
 	drive_to_line(-250, -250, left_side, right_side)
-    #drive_to_line_white(-250, -250, left_side, right_side)
+	drive(0, 0)
+	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE, 5)
+	move_servo(CLAW_PORT, CLAW_DRAWER)
+	sweep()
+	drive_to_line_white(-150, -150, left_side, right_side)
+	drive_to_line(-150, -150, left_front, right_front)
+	drive(0, 0)
 	move_servo(ROD_PORT, ROD_ANGLED_DRAWER)
-
-    
-	k.msleep(800)
-	drive(50, -50)
-	while k.analog(ROD_TOPHAT) < ROD_TOPHAT_BLACK:
-		pass
-	drive(0,0)
-	move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
-	move_servo(CLAW_PORT, CLAW_CLOSED+200)
 	
-
-	drive(-100,-100)
+	k.msleep(800)
+	move_servo(CLAW_PORT, CLAW_CLOSED + 220)
+	rod_align_black(15, -15) #turn towards drawer
+	rod_align_white(-15, 15)
+	drive(200, 200) #drive back to avoid hitting pipe above drawer
 	k.msleep(200)
 	drive(0, 0)
+	move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
+	k.msleep(500) #wait for claw to close fully
 
+	#drive towards drawer
 	drive(-100, -100)
-	while left_side() < BLACK:
-		pass
-	drive(0,0)
-
-	k.msleep(200)
-
+	while left_front() > BLACK:
+		continue
+	move_servo(ROD_PORT, 1064) #realign with tape again before driving in
+	rod_align_black(20, -20)
 	drive(-100, -100)
+	while left_front() < BLACK:
+		continue
+	k.msleep(70)
+	drive(0, 0)
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+	return
+
+	drive(250, 250)
 	while left_side() > BLACK:
 		pass
-	drive(0,0)
-	drive(-100, -100)
-	k.msleep(400)
-	drive(0, 0)
-	k.msleep(1000)
-	move_servo_slowly(CLAW_PORT, CLAW_CLOSED, 5)
-	#ihs_bindings.encoder_turn_degrees_v2(100, -3)
-	drive(250, 250)
 	while left_side() < BLACK:
 		pass
+	k.msleep(100)
 	drive(0,0)
-
-
-
-
-
+	move_servo(CLAW_PORT, CLAW_OPEN)
 	
-    
-
-
-    
-
-
-
+	#drives back to pull out drawer until roomba hits pipe
+	drive(100, 100)
+	while not k.get_create_rbump():
+		pass
 
 if __name__ == "__main__":
 	retry_connect(5)
