@@ -417,7 +417,7 @@ def new_main():
 		print("invalid battery info probably means bot will do something dumb")
 		return -1
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 3) 
-	ihs_bindings.encoder_turn_degrees_v2(100, -45)
+	ihs_bindings.encoder_turn_degrees_v2(100, -55)
 	#move_servo_slowly(ROD_PORT, ROD_LEFT_SIDE, 5)
 	drive_to_line(250, 250, left_side, right_side)
 	drive_to_line_white(100, 100, left_side, right_side)
@@ -427,7 +427,7 @@ def new_main():
 	while k.analog(SWEEPER_PORT) < SWEEPER_BLACK:
 	    pass
 	"""
-	k.msleep(1100)
+	k.msleep(1300)
 	drive(0, 0)
 	"""
 	l = time()
@@ -438,16 +438,16 @@ def new_main():
 	print(time() - l) 
 	"""
 	#bulldoze rock out of the way
-	ihs_bindings.encoder_turn_degrees_v2(100, 40)
+	ihs_bindings.encoder_turn_degrees_v2(100, 90)
+	"""
 	move_servo_slowly(ARM_PORT, ARM_DOWN, 5)
 	move_servo(CLAW_PORT, CLAW_STRAIGHT)
 	ihs_bindings.encoder_turn_degrees_v2(100, 50)
-
+	"""
 	#sweep()
 	drive_to_line(-250, -250, left_side, right_side)
 	drive(0, 0)
 	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE, 5)
-	move_servo(CLAW_PORT, CLAW_DRAWER)
 	sweep()
 	drive_to_line_white(-150, -150, left_side, right_side)
 	drive_to_line(-150, -150, left_front, right_front)
@@ -455,42 +455,82 @@ def new_main():
 	move_servo(ROD_PORT, ROD_ANGLED_DRAWER)
 	
 	k.msleep(800)
-	move_servo(CLAW_PORT, CLAW_CLOSED + 220)
+	move_servo(CLAW_PORT, CLAW_OPEN)
 	rod_align_black(15, -15) #turn towards drawer
-	rod_align_white(-15, 15)
+	#rod_align_white(-15, 15)
 	drive(200, 200) #drive back to avoid hitting pipe above drawer
-	k.msleep(200)
+	while right_front() < BLACK:
+		continue
+	k.msleep(400)
 	drive(0, 0)
+
 	move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
+	move_servo(CLAW_PORT, CLAW_CLOSED + 220)
 	k.msleep(500) #wait for claw to close fully
 
 	#drive towards drawer
-	drive(-100, -100)
-	while left_front() > BLACK:
+	"""
+	drive(100, 100)
+	while left_front() < BLACK:
 		continue
-	move_servo(ROD_PORT, 1064) #realign with tape again before driving in
-	rod_align_black(20, -20)
+	drive(0, 0)
+
+	k.msleep(200)
+	"""
+	'''
+	move_servo(ROD_PORT, 940)
+	#realign with tape again before driving in
+	k.msleep(500)
+	#rod_align_black(20, -20)
+	#rod_align_white(-20, 20)
+	drive(0, 0)
+	'''
+	move_servo(CLAW_PORT, CLAW_CLOSED + 190) # second realign  # close claw tigher to fit in	
+
+	#move back and forth to hopefully get claw to close
 	drive(-100, -100)
 	while left_front() < BLACK:
 		continue
-	k.msleep(70)
-	drive(0, 0)
-	move_servo(CLAW_PORT, CLAW_CLOSED)
-	return
+	while left_front() > BLACK:
+		continue
+	move_servo(CLAW_PORT, CLAW_CLOSED + 300)
+	k.msleep(300)
+	drive(0, 0)	
 
+	"""
+	for i in range(10):
+		drive(100, -100)
+		k.msleep(100)
+		drive(-100, 100)
+		k.msleep(100)
+	drive(0, 0)
+	"""
+	move_servo(CLAW_PORT, CLAW_CLOSED) #grab drawer
 	drive(250, 250)
 	while left_side() > BLACK:
-		pass
+		continue
 	while left_side() < BLACK:
-		pass
+		continue
 	k.msleep(100)
 	drive(0,0)
 	move_servo(CLAW_PORT, CLAW_OPEN)
+	#end of pulling out drawer
+	drive(-250, -250)
+	k.msleep(100) #move to give room for rod to move to side
+	move_servo(ROD_PORT, ROD_SIDE)
+
+	ihs_bindings.encoder_turn_degrees_v2(100, -30)
+	drive_to_line(100, 100, left_side, right_side)
+	ihs_bindings.encoder_turn_degrees_v2(100, 90)
+	drive(-500, -500)
+	k.msleep(500)
+	ihs_bindings.encoder_turn_degrees_v2(500, -180)
+	#align w/mid line
+	drive_to_line(300, 300, left_side, right_side)
+	drive_to_line_white(100, 100, left_side, right_side)
+	ihs_bindings.encoder_turn_degrees_v2(500, 85)
+	sweeper_align_black(50, -50)
 	
-	#drives back to pull out drawer until roomba hits pipe
-	drive(100, 100)
-	while not k.get_create_rbump():
-		pass
 
 if __name__ == "__main__":
 	retry_connect(5)
@@ -504,12 +544,12 @@ if __name__ == "__main__":
 		k.msleep(1000)
 		print(right_front())
 	"""
-
+	start_time = time()
 	#drive(0,0)
 	#drive_to_line_white(150,150, left_side, right_side)
 	#purple_noodles_main()
 	#old_main()
 	new_main()
-
+	print(time() - start_time)
 
 	#ihs_bindings.encoder_turn_degrees_v2(100,180)
