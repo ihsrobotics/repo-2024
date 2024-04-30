@@ -16,6 +16,7 @@ def drop_limbs():
     stop_motor(ARM)
 
 def drive_to_dropoff():
+    '''
     # Move out of start box
     while not on_tape(FRONT_TOPHAT, FRONT_BLACK):
         drive(1500, 1500)
@@ -26,7 +27,7 @@ def drive_to_dropoff():
 
     # Adjust to middle tape
     drive(1500,900,1000)
-    
+    '''
     # Line follow to middle
     k.set_servo_position(BOOM_SERVO, BOOM_RIGHT_POS)
     k.msleep(100)
@@ -72,18 +73,30 @@ def drop_jannis():
     while time() - start < 3.1:
         line_follow(500, 1500, "RIGHT", BOOM_TOPHAT, BOOM_BLACK)
     brake()
+
     # Move to drop off spot
-    drive(-500, -500, 800) # INCREASE NOW
-    brake()
+    # drive(-500, -500, 1500) # INCREASE NOW
+    # brake()
 
-    # Push Jannis into wall
-    drive(-500, 500, 300)
-    brake()
+    # k.cmpc(LEFT_WHEEL)
+    # k.cmpc(RIGHT_WHEEL)
+    # bruh = -4
+    # while k.gmpc(LEFT_WHEEL) > bruh and k.gmpc(RIGHT_WHEEL) > bruh:
+    #     if (k.gmpc(LEFT_WHEEL) > bruh): k.mav(LEFT_WHEEL, -300)
+    #     else: k.mav(LEFT_WHEEL, 0)
+
+    #     if (k.gmpc(RIGHT_WHEEL) > bruh): k.mav(RIGHT_WHEEL, -300)
+    #     else: k.mav(RIGHT_WHEEL, 0)
+    # brake()
 
 
-    drive(-500, 0, 230)
-    brake()
+    # # Push Jannis into wall
+    # drive(-500, 500, 300)
+    # brake()
 
+    # drive(-500, 0, 230)
+    # brake()
+    '''
     # Unclasp Jannis
     k.enable_servo(JANNIS_SERVO)
     for i in range(k.get_servo_position(JANNIS_SERVO), 2000):
@@ -93,6 +106,8 @@ def drop_jannis():
     # Turn to get counterweight out the way (temporary)
     drive(300, 50, 1000)
     brake()
+    '''
+    
 
 # Just used for testing
 def tube_drop():
