@@ -56,7 +56,7 @@ def is_right_side_white():
 def is_rod_white():
 	return k.analog(ROD_PORT) > ROD_TOPHAT_BLACK
 def sweep():
-	speed = -1000
+	speed = 1000
 	k.mav(SWEEPER_PORT, speed)
 	k.msleep(600)
 	k.mav(SWEEPER_PORT, -speed)
@@ -411,13 +411,84 @@ def purple_noodles_main():
 	print("Time:", time() - start_time)
 	print("Roomba Battery Used", str((k.get_create_battery_charge() - start_charge)/k.get_create_battery_capacity() * 100) + "%")
 	#move_servo_slowly(ARM_PORT, ARM_LAVA_RESET, 5)
+def cubes():
+	line_follow(SWEEPER_TOPHAT_PORT, is_right_side_white)
+	"""
+	drive(200,200)
+	k.msleep(200)
+	""" 
+	drive(-100, -100) #get closer to ensure cube grab
+	k.msleep(100)
+	drive(0, 0)
+	#move_servo_slowly(ARM_PORT,ARM_SHELF-10,10)
+	move_servo_slowly(CLAW_PORT, CLAW_CLOSED)
+	k.msleep(500)
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
+	
+	#drops off cubes
+	ihs_bindings.encoder_turn_degrees_v2(500, -60)
+	move_servo_slowly(ARM_PORT, ARM_DOWN, 5)
+	move_servo(CLAW_PORT, CLAW_OPEN)
+	k.msleep(500)
+	move_servo_slowly(ARM_PORT, ARM_SWITCH_UP, 5)
+	ihs_bindings.encoder_turn_degrees_v2(500, 50)
+	sweeper_align_black(30, -30)
+def switch():
+	sweep()
+	move_servo_slowly(ARM_PORT, ARM_DOWN, 5)
+	line_follow(SWEEPER_TOPHAT_PORT, is_right_front_white)
+	drive(-100, -100)
+	#one more alignment for good measure
+	#move_servo(ROD_PORT, ROD_STRAIGHT)
+	k.msleep(100)
+	#rod_align_black(-30, 30)
+	#rod_align_white(30, -30)
+	drive(0,0)
+	#move_servo(ROD_PORT, ROD_SIDE)
+	#drive(50, 50)
+	#k.msleep(200)
+	drive(0,0)
 
+	#flips switch UP
+	move_servo(ARM_PORT,ARM_SWITCH_UP)
+def grab_yannis():
+	drive(20, 20)
+	k.msleep(400)
+	drive(0, 0)
+	move_servo_slowly(ARM_PORT, ARM_LAVA_RESET, 3)
+	move_servo(ROD_PORT, ROD_STRAIGHT)
+	ihs_bindings.encoder_turn_degrees_v2(500,175)
+	#drive(-300,-300)
+	#k.msleep(200)
+	#line_follow(SWEEPER_TOPHAT_PORT, is_left_side_white)
+	drive(0, 0)
+	rod_align_black(50, -50)
+	rod_align_white(-50, 50)
+	
+	move_servo(ROD_PORT, ROD_YANNIS_GRAB) # moves sensor so we can detect the side line (original: 1370)
+	k.msleep(500) # give time for rod to settle down for more accurate sensor
+	rod_align_black(-100, -100)
+	k.msleep(100)
+	sweep()
+	move_servo(ROD_PORT, ROD_SIDE)
+	move_servo(CLAW_PORT, CLAW_CLOSED)
+	ihs_bindings.encoder_turn_degrees_v2(200, 60)
+
+	#shakes the purple tubes off the base
+	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE)	
+	for i in range(2):
+		drive(50, 50)
+		k.msleep(200)
+		drive(-50, -50)
+		k.msleep(200)
+	
 def new_main():
 	if not print_battery_info():
 		print("invalid battery info probably means bot will do something dumb")
 		return -1
+	drawer_time = time()
 	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 3) 
-	ihs_bindings.encoder_turn_degrees_v2(100, -55)
+	ihs_bindings.encoder_turn_degrees_v2(500, -55)
 	#move_servo_slowly(ROD_PORT, ROD_LEFT_SIDE, 5)
 	drive_to_line(250, 250, left_side, right_side)
 	drive_to_line_white(100, 100, left_side, right_side)
@@ -454,8 +525,9 @@ def new_main():
 	drive(0, 0)
 	move_servo(ROD_PORT, ROD_ANGLED_DRAWER)
 	
-	k.msleep(800)
+	k.msleep(500)
 	move_servo(CLAW_PORT, CLAW_OPEN)
+	ihs_bindings.encoder_turn_degrees_v2(500, 10)
 	rod_align_black(15, -15) #turn towards drawer
 	#rod_align_white(-15, 15)
 	drive(200, 200) #drive back to avoid hitting pipe above drawer
@@ -465,8 +537,6 @@ def new_main():
 	drive(0, 0)
 
 	move_servo_slowly(ARM_PORT, ARM_DOWN, 10)
-	move_servo(CLAW_PORT, CLAW_CLOSED + 220)
-	k.msleep(500) #wait for claw to close fully
 
 	#drive towards drawer
 	"""
@@ -485,7 +555,7 @@ def new_main():
 	#rod_align_white(-20, 20)
 	drive(0, 0)
 	'''
-	move_servo(CLAW_PORT, CLAW_CLOSED + 190) # second realign  # close claw tigher to fit in	
+	move_servo_slowly(CLAW_PORT, CLAW_CLOSED + 180, 10) # second realign  # close claw tigher to fit in	
 
 	#move back and forth to hopefully get claw to close
 	drive(-100, -100)
@@ -493,8 +563,12 @@ def new_main():
 		continue
 	while left_front() > BLACK:
 		continue
+	k.msleep(200)
+	drive(0, 0)
 	move_servo(CLAW_PORT, CLAW_CLOSED + 300)
-	k.msleep(300)
+	k.msleep(500)
+	drive(-100, -100)
+	k.msleep(150)
 	drive(0, 0)	
 
 	"""
@@ -506,6 +580,7 @@ def new_main():
 	drive(0, 0)
 	"""
 	move_servo(CLAW_PORT, CLAW_CLOSED) #grab drawer
+	#pull drawer out
 	drive(250, 250)
 	while left_side() > BLACK:
 		continue
@@ -516,21 +591,48 @@ def new_main():
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	#end of pulling out drawer
 	drive(-250, -250)
-	k.msleep(100) #move to give room for rod to move to side
+	k.msleep(200) #move to give room for rod to move to side
 	move_servo(ROD_PORT, ROD_SIDE)
+	
 
-	ihs_bindings.encoder_turn_degrees_v2(100, -30)
-	drive_to_line(100, 100, left_side, right_side)
-	ihs_bindings.encoder_turn_degrees_v2(100, 90)
-	drive(-500, -500)
-	k.msleep(500)
+	ihs_bindings.encoder_turn_degrees_v2(500, -30)
+	drive_to_line(200, 200, left_side, right_side)
+	drive_to_line_white(100, 100, left_side, right_side)
+	ihs_bindings.encoder_turn_degrees_v2(500, 90)
+	drive(-200, -200)
+	move_servo_slowly(ARM_PORT, ARM_SHELF, 5) #get ready for cubes
+	drive(0, 0)
 	ihs_bindings.encoder_turn_degrees_v2(500, -180)
 	#align w/mid line
 	drive_to_line(300, 300, left_side, right_side)
 	drive_to_line_white(100, 100, left_side, right_side)
 	ihs_bindings.encoder_turn_degrees_v2(500, 85)
-	sweeper_align_black(50, -50)
-	
+	sweeper_align_black(50, -50) #should be facing cubes
+	print(time() - drawer_time)
+	sweep()
+	cubes()
+	switch()
+	grab_yannis()
+
+	# move roomba sensors off line to realign
+	drive(500, 500)
+	k.msleep(200)
+	drive_to_line(-150, -150, left_side, right_side)
+	drive(500, 500)
+	k.msleep(200)
+	drive(0, 0)
+	#moves arm up to clear avoid hitting structure
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 3)
+	ihs_bindings.encoder_turn_degrees_v2(100, -100)
+
+	#moves onto line for line follow
+	sweeper_align_black(-300, -300)
+	sweeper_align_white(-300, -300)
+	drive(-300, -300)
+	k.msleep(300)
+	sweeper_align_black(-200, 200)
+	drive(0, 0)
+	sweep()
 
 if __name__ == "__main__":
 	retry_connect(5)
