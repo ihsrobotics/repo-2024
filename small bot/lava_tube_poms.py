@@ -39,26 +39,49 @@ def go_to_lava():
         # brake() 
         
 
-def peck():
-        k.mav(DRILL, 750)
+def peck_first():
+        k.mav(DRILL, 1500)
         move_arm("GROUND")
 
-        for i in range(7):
+        for i in range(4):
                 #Suck Up Poms
-                k.mav(DRILL, 750)
-                k.msleep(500)
+                k.mav(DRILL, 1500)
+                k.msleep(2000)
                 
 
                 #Move Arm Up
-                k.mav(ARM, -500)
-                k.mav(DRILL, 750)
-                k.msleep(270)
+                k.mav(ARM, -250)
+                k.mav(DRILL, 1500)
+                k.msleep(800)
                 stop_motor(ARM)
 
                 #Move Arm Down
-                k.mav(ARM, 500)
-                k.mav(DRILL, 750)
-                k.msleep(270)
+                k.mav(ARM, 250)
+                k.mav(DRILL, 1500)
+                k.msleep(800)
+                stop_motor(ARM)
+
+                k.msleep(500)
+def peck_second():
+        k.mav(DRILL, 1500)
+        move_arm("GROUND")
+
+        for i in range(2):
+                #Suck Up Poms
+                k.mav(DRILL, 1500)
+                k.msleep(2000)
+                
+
+                #Move Arm Up
+                k.mav(ARM, -250)
+                k.mav(DRILL, 1500)
+                k.msleep(800)
+                stop_motor(ARM)
+
+                #Move Arm Down
+                k.mav(ARM, 250)
+                k.mav(DRILL, 1500)
+                k.msleep(800)
                 stop_motor(ARM)
 
                 k.msleep(500)
@@ -118,15 +141,18 @@ def align_with_second_pipe():
 
 def main():
         #POMS
-        move_arm("BOX")
         k.msleep(500)
         go_to_lava()
-        drill_tube()
+        # drill_tube()
+        peck_first()
         stop_motor(DRILL)
         move_arm("BOX")
         align_with_second_pipe()
-        peck()
+        peck_second()
         stop_motor(DRILL)
+        drive(-500, -500)
+        k.msleep(100)
+        brake()
         move_arm("BOX")
 
 if __name__ == "__main__":
@@ -134,11 +160,6 @@ if __name__ == "__main__":
         k.set_servo_position(BOOM_ARM, 1940)
         k.set_servo_position(JANNIS, 2047)
         k.set_servo_position(SWIPER, 0)
+        move_arm("BOX")
 
 main()
-
-#1. 3 (FAIL)
-#2. 4 (PASS)
-#3. 3 (FAIL)
-#4. 3 (FAIL)
-#5. 
