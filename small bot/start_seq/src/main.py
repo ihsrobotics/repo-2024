@@ -5,10 +5,13 @@ from config_loader import *
 from time import time
 
 def lower_arm_to_pickup():
+    # # Use this when ARM_UP_POS = 0 
+    # # ARM_DOWN_POS should be 5 is so
     # while k.analog(SLIDE) > ARM_UP_POS:
     #     k.mav(ARM, -1500)
     # stop_motor(ARM)
 
+    # Lower ARM to down position
     while k.analog(SLIDE) < ARM_DOWN_POS:
         k.mav(ARM, 1500)
     stop_motor(ARM)
