@@ -21,7 +21,8 @@ while k.digital(RIGHT_BUTTON) != 1:
             k.set_servo_position(SERVO, 2047)
         else:
             k.set_servo_position(SERVO, 0)
-        k.msleep(3000)
+        k.msleep(100)
         k.disable_servo(SERVO)
         is_open = not is_open
+        k.msleep(2900)
     k.msleep(100)
