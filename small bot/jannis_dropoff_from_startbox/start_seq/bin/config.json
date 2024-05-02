@@ -1,0 +1,32 @@
+{
+    "LEFT_WHEEL":1,
+    "RIGHT_WHEEL":0,
+    "ARM":2,
+
+    "SWITCH":0,
+    "LEFT_BUTTON":8,
+    "RIGHT_BUTTON":9,
+
+    "FRONT_TOPHAT":0,
+    "SLIDE":4,
+    "BOOM_TOPHAT":5,
+
+    "CLAW_SERVO":0,
+    "BOOM_SERVO":2,
+    "JANNIS_SERVO":3,
+ 
+    "FRONT_BLACK":3800,
+    "BOOM_BLACK":3700,
+
+    "BOOM_RIGHT_POS":0,
+    "BOOM_LEFT_POS":2047,
+    "BOOM_ASTRO_PICKUP_POS": 1545,
+
+    "CLAW_COMB_CLOSE_POS":915,
+
+    "ARM_UP_POS":110,
+    "ARM_DOWN_POS":3800,
+
+    "JANNIS_DOWN_POS":820,
+    "JANNIS_UP_POS":2047
+}
