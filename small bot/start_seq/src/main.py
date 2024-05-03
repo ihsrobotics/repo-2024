@@ -46,7 +46,7 @@ def drive_to_astronaut_pickup():
         drive(1500, -1500)
     brake()
     while on_tape(BOOM_TOPHAT, BOOM_BLACK):
-        drive(1500, -1500)
+        drive(1500, -1500) # make this slower/more accurate -> might make line following faster
     brake()
 
     lower_arm_to_pickup()
