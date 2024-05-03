@@ -22,8 +22,8 @@ def leave_start_box():
         drive(1500, 1500)
     brake()
 
-    # Raise ARM to up position
-    raise_arm_up()
+    # # Raise ARM to up position
+    # raise_arm_up() might not need this...
 
     # Adjust to middle tape
     drive(1500, 900, 1000)
@@ -68,16 +68,16 @@ def pick_up_astronauts():
     raise_arm_up()
 
 def drive_to_first_dropoff():
-    # 
+    # Prepare to drive forward to dropoff
     k.set_servo_position(BOOM_SERVO, BOOM_LEFT_POS)
     k.msleep(100)
 
-    # Turn to start line follow
+    # Turn toward dropoff
     while not on_tape(FRONT_TOPHAT, FRONT_BLACK):
         drive(-600, 1500)
     brake()
 
-    # Drive forward until BOOM is ready to line follow along the tape
+    # Drive forward to dropoff
     while not on_tape(BOOM_TOPHAT, BOOM_BLACK):
         drive(1500, 1000)
     brake()
@@ -85,6 +85,7 @@ def drive_to_first_dropoff():
         drive(1500, 1000)
     brake()
 
+    # Turn to dropoff hole
     k.set_servo_position(BOOM_SERVO, 1460)
     k.msleep(300) # longer wait to get accurate values
 
@@ -92,18 +93,19 @@ def drive_to_first_dropoff():
         drive(0, 1000)
     brake()
 
+    # Drive closer to dropoff hole
     clear_ticks()
     while k.gmpc(LEFT_WHEEL) < 120 or k.gmpc(RIGHT_WHEEL) < 120:
         drive(500, 500)
     brake()
 
-    
-
 def drop_first():
-    while k.analog(SLIDE) < 2350:
+    # Lower arm to hover over dropoff hole
+    while k.analog(SLIDE) < 2350: # ARM_FIRST_HOVER_POS
         k.mav(ARM, 700)
     stop_motor(ARM)
 
+    # Wiggle to get astronaut in hole
     for i in range(2):
         drive(200, -200, 200)
         brake()
@@ -111,6 +113,7 @@ def drop_first():
         brake()
     brake()
 
+    # Lower arm & drive backwards to release astronaut
     k.mav(ARM, 900)
     k.msleep(100)
     stop_motor(ARM)
@@ -118,13 +121,15 @@ def drop_first():
     drive(-1000, -1000, 200)
     brake()
 
-    # move for jannis dropoff in advance
+    # Set BOOM to Jannis dropoff line follow position in advance
     k.set_servo_position(BOOM_SERVO, BOOM_LEFT_POS)
     k.msleep(100)
 
-    raise_arm_up()
+    # Raise ARM to up position
+    raise_arm_up() # maybe not necessary to go all the way up. think abt it
 
 def drive_to_jannis_dropoff():
+    # Turn to get BOOM tophat on the tape
     while not on_tape(BOOM_TOPHAT, BOOM_BLACK):
         drive(1500, -1500)
     brake()
@@ -132,6 +137,7 @@ def drive_to_jannis_dropoff():
         drive(1500, -1500)
     brake()
 
+    # Fast line follow to straighten out
     start = time()
     while time() - start < 2:
         line_follow(600, 1500, "RIGHT", BOOM_TOPHAT, BOOM_BLACK)
@@ -148,7 +154,7 @@ def drive_to_jannis_dropoff():
         drive(-1500, -1250)
     brake()
 
-    # Drive forward to adjust Jannis
+    # Drive forward to get Jannis in dropoff spot
     clear_ticks()
     while k.gmpc(LEFT_WHEEL) < 770 or k.gmpc(RIGHT_WHEEL) < 770: 
         drive(500, 500)
@@ -156,11 +162,9 @@ def drive_to_jannis_dropoff():
 
 def drop_jannis():
     # Unclasp Jannis
-    for i in range(k.get_servo_position(JANNIS_SERVO), 2040):
+    for i in range(k.get_servo_position(JANNIS_SERVO), 2047+1):
         k.set_servo_position(JANNIS_SERVO, i)
         k.msleep(1)
-    k.set_servo_position(JANNIS_SERVO, 2047)
-    k.msleep(100)
 
     # Push Jannis into wall
     drive(-500, 500, 300)
