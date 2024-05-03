@@ -423,7 +423,7 @@ def cubes():
 	
 	#drops off cubes
 	ihs_bindings.encoder_turn_degrees_v2(500, -60)
-	move_servo_slowly(ARM_PORT, ARM_DOWN, 5)
+	#move_servo_slowly(ARM_PORT, ARM_DOWN, 5)
 	move_servo(CLAW_PORT, CLAW_OPEN)
 	k.msleep(500)
 	move_servo_slowly(ARM_PORT, ARM_SWITCH_UP, 5)
@@ -434,7 +434,7 @@ def cubes():
 def switch():
 	switch_time = time()
 	sweep()
-	move_servo_slowly(ARM_PORT, ARM_DOWN, 5)
+	move_servo_slowly(ARM_PORT, ARM_SWITCH, 5)
 	line_follow(SWEEPER_TOPHAT_PORT, is_right_front_white)
 	drive(-100, -100)
 	#one more alignment for good measure
@@ -473,18 +473,27 @@ def grab_yannis():
 	rod_align_black(-100, -100)
 	k.msleep(100)
 	move_servo(ROD_PORT, ROD_SIDE)
-	move_servo(CLAW_PORT, CLAW_CLOSED)
+	#shakes to make sure purple noodles are in
+
+	move_servo(CLAW_PORT, 200)
+	k.msleep(200)
+	for i in range(1):
+		drive(-20, 20)
+		k.msleep(150)
+		drive(20, -20)
+		k.msleep(150)
+
+	move_servo_slowly(CLAW_PORT, CLAW_CLOSED, 10)
 	ihs_bindings.encoder_turn_degrees_v2(200, 90)
 
 	#shakes the purple tubes off the base
 	move_servo_slowly(ARM_PORT, ARM_MIDDLE_NOODLE)	
-	"""
-	for i in range(2):
+	for i in range(1):
 		drive(20, 20)
 		k.msleep(200)
 		drive(-20, -20)
 		k.msleep(200)
-	"""
+
 	print ("GRAB JANNIS TIME:", time() - grab_yannis_time)
 	
 def new_main():
@@ -497,6 +506,7 @@ def new_main():
 	#move_servo_slowly(ROD_PORT, ROD_LEFT_SIDE, 5)
 	drive_to_line(250, 250, left_side, right_side)
 	drive_to_line_white(100, 100, left_side, right_side)
+
 
 	drive(200, 200)
 	"""
@@ -569,12 +579,12 @@ def new_main():
 		continue
 	while left_front() > BLACK:
 		continue
-	k.msleep(150)
+	k.msleep(200)#150 og
 	drive(0, 0)
 	move_servo(CLAW_PORT, CLAW_CLOSED + 300)
 	k.msleep(500)
 	drive(-100, -100)
-	k.msleep(200)
+	k.msleep(220)
 	drive(0, 0)	
 
 	"""
@@ -595,36 +605,42 @@ def new_main():
 	k.msleep(100)
 	drive(0,0)
 	move_servo(CLAW_PORT, CLAW_OPEN)
-	k.msleep(300) #give time for claw to open
+	k.msleep(500) #give time for claw to open
 	#end of pulling out drawer
 	drive(-250, -250)
 	k.msleep(200) #move to give room for rod to move to side
 	move_servo(ROD_PORT, ROD_SIDE)
 	
-
 	ihs_bindings.encoder_turn_degrees_v2(500, -30)
+	move_servo_slowly(ARM_PORT, ARM_STRAIGHT_UP, 5)
 	drive_to_line(200, 200, left_side, right_side)
 	drive_to_line_white(100, 100, left_side, right_side)
-	ihs_bindings.encoder_turn_degrees_v2(500, 90)
-	drive(-200, -200)
-	move_servo_slowly(ARM_PORT, ARM_SHELF, 5) #get ready for cubes
+	 #get ready for cubes
+	sweep_async()
+	ihs_bindings.encoder_turn_degrees_v2(500, -90)
+	#sweep()
 	drive(0, 0)
-	ihs_bindings.encoder_turn_degrees_v2(500, -180)
+	#ihs_bindings.encoder_turn_degrees_v2(500, -180)
+	sweep_async()
 	#align w/mid line
 	drive_to_line(300, 300, left_side, right_side)
 	drive_to_line_white(100, 100, left_side, right_side)
-	ihs_bindings.encoder_turn_degrees_v2(500, 85)
+	drive(0, 0)
+	move_servo_slowly(ARM_PORT, ARM_SHELF, 5)
+	sweep_right()
+	ihs_bindings.encoder_turn_degrees_v2(500, 80)
 	sweeper_align_black(50, -50) #should be facing cubes
 	print("DRAWER TIME:", time() - drawer_time)
-	sweep()
 	cubes()
 	switch()
 	sweep_async()
 	grab_yannis()
 
 	# move roomba sensors off line to realign
+	sweep_center() #hopefully free rocks under?
 	drive(200, 200)
 	k.msleep(1000)
+	sweep_left()
 	drive_to_line(-150, -150, left_side, right_side)
 	drive(200, 200)
 	k.msleep(500)
@@ -635,9 +651,11 @@ def new_main():
 
 	#moves onto line for line follow
 	sweeper_align_black(-200, -200)
+	drive(0, 0)
+	sweep()
 	sweeper_align_white(-200, -200)
-	drive(-200, -200)
-	k.msleep(270)
+	drive(-500, -500)
+	k.msleep(300)
 	sweeper_align_black(-100, 100)
 	drive(0, 0)
 	sweep()
@@ -648,6 +666,7 @@ def new_main():
 	k.ao()
 	"""
 	lava_tubes.lava_tubes_pathing()
+	lava_tubes.lava_tubes_main()
 
 if __name__ == "__main__":
 	retry_connect(5)
@@ -667,6 +686,7 @@ if __name__ == "__main__":
 	#purple_noodles_main()
 	#old_main()
 	new_main()
+	#grab_yannis()
 	print("TOTAL TIME:", time() - start_time)
 
 	#ihs_bindings.encoder_turn_degrees_v2(100,180)
