@@ -4,23 +4,9 @@ from bot_functions import *
 from config_loader import *
 from time import time
 
-def lower_arm_to_pickup():
-    # # Use this when ARM_UP_POS = 0 
-    # # ARM_DOWN_POS should be 5 is so
-    # while k.analog(SLIDE) > ARM_UP_POS:
-    #     k.mav(ARM, -1500)
-    # stop_motor(ARM)
-
-    # Lower ARM to down position
-    while k.analog(SLIDE) < ARM_DOWN_POS:
-        k.mav(ARM, 1500)
-    stop_motor(ARM)
-
 def drop_limbs():
     # Bring arm in to pop it out
-    while (k.analog(SLIDE) > ARM_UP_POS):
-        k.mav(ARM, -1500)
-    stop_motor(ARM)
+    raise_arm_up()
 
     # Lower arm to lower counterweight
     k.mav(ARM, -500)
@@ -37,15 +23,13 @@ def leave_start_box():
     brake()
 
     # Raise ARM to up position
-    while k.analog(SLIDE) > ARM_UP_POS:
-        k.mav(ARM, -1500)
-    stop_motor(ARM)
+    raise_arm_up()
 
     # Adjust to middle tape
-    drive(1500,900,1000)
+    drive(1500, 900, 1000)
 
 def drive_to_astronaut_pickup(): 
-    # Line follow to middle
+    # Line follow to middle line
     k.set_servo_position(BOOM_SERVO, BOOM_RIGHT_POS)
     k.msleep(100)
 
@@ -53,41 +37,38 @@ def drive_to_astronaut_pickup():
         line_follow(1000, 1500, "RIGHT", BOOM_TOPHAT, BOOM_BLACK)
     brake()
 
-    # Set BOOM to the right position for the pickup
+    # Set BOOM to the correct position for the pickup
     k.set_servo_position(BOOM_SERVO, BOOM_ASTRO_PICKUP_POS)
     k.msleep(100)
 
-    # Rough 90 turn to face toward pickup spot
-    drive(1500, -1500, 850)
+    # Turn to face toward pickup spot
+    while not on_tape(BOOM_TOPHAT, BOOM_BLACK):
+        drive(1500, -1500)
+    brake()
+    while on_tape(BOOM_TOPHAT, BOOM_BLACK):
+        drive(1500, -1500)
     brake()
 
     lower_arm_to_pickup()
 
-    # Adjust to tape before line following
-    while not on_tape(BOOM_TOPHAT, BOOM_BLACK):
-        drive(500, 1000)
-    brake()
-
     # Fast line follow to astronauts
     start = time()
-    while time() - start < 1.2:
+    while time() - start < 1.45:
         line_follow(500, 1000, "RIGHT", BOOM_TOPHAT, BOOM_BLACK)
     brake()
 
     # Slow line follow to astronauts
     start = time()
-    while time() - start < 2.9: # 7 secs without the fast line follow
+    while time() - start < 2.8: # 7 secs without the fast line follow
         line_follow(100, 200, "RIGHT", BOOM_TOPHAT, BOOM_BLACK)
     brake()
 
 def pick_up_astronauts():
     # Raise ARM to up position
-    while k.analog(SLIDE) > ARM_UP_POS:
-        k.mav(ARM, -1500)
-    stop_motor(ARM)
+    raise_arm_up()
 
-def drive_to_jannis_dropoff():
-    # Set BOOM to Jannis-dropoff line follow position
+def drive_to_first_dropoff():
+    # 
     k.set_servo_position(BOOM_SERVO, BOOM_LEFT_POS)
     k.msleep(100)
 
@@ -104,7 +85,53 @@ def drive_to_jannis_dropoff():
         drive(1500, 1000)
     brake()
 
-    # Fast line follow to straighten out
+    k.set_servo_position(BOOM_SERVO, 1460)
+    k.msleep(300) # longer wait to get accurate values
+
+    while not on_tape(BOOM_TOPHAT, BOOM_BLACK):
+        drive(0, 1000)
+    brake()
+
+    clear_ticks()
+    while k.gmpc(LEFT_WHEEL) < 120 or k.gmpc(RIGHT_WHEEL) < 120:
+        drive(500, 500)
+    brake()
+
+    
+
+def drop_first():
+    while k.analog(SLIDE) < 2350:
+        k.mav(ARM, 700)
+    stop_motor(ARM)
+
+    for i in range(2):
+        drive(200, -200, 200)
+        brake()
+        drive(-200, 200, 200)
+        brake()
+    brake()
+
+    k.mav(ARM, 900)
+    k.msleep(100)
+    stop_motor(ARM)
+
+    drive(-1000, -1000, 200)
+    brake()
+
+    # move for jannis dropoff in advance
+    k.set_servo_position(BOOM_SERVO, BOOM_LEFT_POS)
+    k.msleep(100)
+
+    raise_arm_up()
+
+def drive_to_jannis_dropoff():
+    while not on_tape(BOOM_TOPHAT, BOOM_BLACK):
+        drive(1500, -1500)
+    brake()
+    while on_tape(BOOM_TOPHAT, BOOM_BLACK):
+        drive(1500, -1500)
+    brake()
+
     start = time()
     while time() - start < 2:
         line_follow(600, 1500, "RIGHT", BOOM_TOPHAT, BOOM_BLACK)
@@ -112,53 +139,49 @@ def drive_to_jannis_dropoff():
     
     # Slow line follow to straighten out
     start = time()
-    while time() - start < 2:
+    while time() - start < 1.0:
         line_follow(400, 800, "RIGHT", BOOM_TOPHAT, BOOM_BLACK)
     brake()
 
     # Drive backwards to dropoff spot
     while k.digital(SWITCH) == 0:
-        drive(-1500, -1300)
+        drive(-1500, -1250)
     brake()
 
     # Drive forward to adjust Jannis
-    k.cmpc(LEFT_WHEEL)
-    k.cmpc(RIGHT_WHEEL)
-    while k.gmpc(LEFT_WHEEL) < 600 or k.gmpc(RIGHT_WHEEL) < 700: # idk why these vals r diff but it works ig
+    clear_ticks()
+    while k.gmpc(LEFT_WHEEL) < 770 or k.gmpc(RIGHT_WHEEL) < 770: 
         drive(500, 500)
     brake()
-    k.disable_servos()
+
+def drop_jannis():
+    # Unclasp Jannis
+    for i in range(k.get_servo_position(JANNIS_SERVO), 2040):
+        k.set_servo_position(JANNIS_SERVO, i)
+        k.msleep(1)
+    k.set_servo_position(JANNIS_SERVO, 2047)
+    k.msleep(100)
 
     # Push Jannis into wall
     drive(-500, 500, 300)
     brake()
-
-def drop_jannis():
-    k.enable_servo(JANNIS_SERVO)
-
-    # Unclasp Jannis
-    for i in range(k.get_servo_position(JANNIS_SERVO), 2000):
-        k.set_servo_position(JANNIS_SERVO, i)
-        k.msleep(1)
-        
-    k.disable_servo(JANNIS_SERVO)
 
     # Turn to get counterweight out the way (temporary)
     drive(300, 100, 1000)
     brake()
 
 def main():
-    # Temporary - the ARM will already be up after leave_start_box()
-    while k.analog(SLIDE) > ARM_UP_POS:
-        k.mav(ARM, -1500)
-    stop_motor(ARM)
-
 
     # drop_limbs()
     # leave_start_box()
+
+    # Temporary - the ARM will already be up after leave_start_box()
+    raise_arm_up()
+
     drive_to_astronaut_pickup()
     pick_up_astronauts()
-    
+    drive_to_first_dropoff()
+    drop_first()
     drive_to_jannis_dropoff()
     drop_jannis()
 
